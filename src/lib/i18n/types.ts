@@ -88,7 +88,9 @@ export interface Translations {
     step3Title: string;
     step3Desc: string;
     commitmentTitle: string;
-    commitmentText: string;
+    commitmentTextBefore: string;
+    commitmentLinkText: string;
+    commitmentTextAfter: string;
     activelyModerated247: string;
     browseDiscussions: string;
   };

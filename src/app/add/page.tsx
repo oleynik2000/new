@@ -100,10 +100,10 @@ export default function AddEntityPage() {
           {t.add.beforeYouPost}
         </h3>
         <ul className="space-y-1 text-xs text-[var(--text-secondary)]">
-          <li>- {t.add.rule1}</li>
-          <li>- {t.add.rule2}</li>
-          <li>- {t.add.rule3}</li>
-          <li>- {t.add.rule4}</li>
+          <li>{t.add.rule1}</li>
+          <li>{t.add.rule2}</li>
+          <li>{t.add.rule3}</li>
+          <li>{t.add.rule4}</li>
         </ul>
       </div>
 

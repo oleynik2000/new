@@ -95,8 +95,11 @@ const en: Translations = {
     step3Desc:
       "Report inappropriate content. Our moderation system keeps the platform clean and respectful.",
     commitmentTitle: "Our Commitment",
-    commitmentText:
+    commitmentTextBefore:
       "We are committed to maintaining a platform that is safe, fair, and useful. All content is subject to our",
+    commitmentLinkText: "Community Guidelines",
+    commitmentTextAfter:
+      ". We use a combination of automated content filters, rate limiting, and community reporting to prevent abuse.",
     activelyModerated247: "Platform actively moderated 24/7",
     browseDiscussions: "Browse Reviews",
   },
