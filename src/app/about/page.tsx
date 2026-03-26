@@ -99,7 +99,16 @@ export default function AboutPage() {
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-3">
             {t.about.commitmentTitle}
           </h2>
-          <p>{t.about.commitmentText}</p>
+          <p>
+            {t.about.commitmentTextBefore}{" "}
+            <Link
+              href="/guidelines"
+              className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline"
+            >
+              {t.about.commitmentLinkText}
+            </Link>
+            {t.about.commitmentTextAfter}
+          </p>
           <div className="mt-4 flex items-center gap-2 text-sm">
             <span className="inline-block h-2 w-2 rounded-full bg-[var(--success)]"></span>
             <span className="text-[var(--text-muted)]">

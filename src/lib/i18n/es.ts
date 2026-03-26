@@ -96,8 +96,11 @@ const es: Translations = {
     step3Desc:
       "Reporta contenido inapropiado. Nuestro sistema de moderacion mantiene la plataforma limpia y respetuosa.",
     commitmentTitle: "Nuestro compromiso",
-    commitmentText:
+    commitmentTextBefore:
       "Estamos comprometidos a mantener una plataforma segura, justa y util. Todo el contenido esta sujeto a nuestras",
+    commitmentLinkText: "Normas de la comunidad",
+    commitmentTextAfter:
+      ". Utilizamos una combinacion de filtros automaticos de contenido, limites de frecuencia y reportes de la comunidad para prevenir abusos.",
     activelyModerated247: "Plataforma moderada activamente 24/7",
     browseDiscussions: "Ver resenas",
   },
