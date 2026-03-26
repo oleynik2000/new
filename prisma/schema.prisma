@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Entity {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String?
+  category    String    @default("other")
+  hidden      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  comments    Comment[]
+  reports     Report[]
+  votes       Vote[]
+  tags        TagOnEntity[]
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  entityId  String
+  parentId  String?
+  hidden    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  entity    Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  reports   Report[]
+}
+
+model Report {
+  id         String   @id @default(uuid())
+  targetType String
+  targetId   String
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  entity     Entity?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entityId   String?
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId  String?
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  entityId  String
+  value     Int
+  voterHash String
+  createdAt DateTime @default(now())
+
+  entity    Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, voterHash])
+}
+
+model Tag {
+  id       String        @id @default(uuid())
+  name     String        @unique
+  entities TagOnEntity[]
+}
+
+model TagOnEntity {
+  id       String @id @default(uuid())
+  entityId String
+  tagId    String
+
+  entity   Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, tagId])
+}
