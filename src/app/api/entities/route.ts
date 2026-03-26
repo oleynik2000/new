@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createEntitySchema } from "@/lib/validators";
-import { containsToxicContent, sanitizeHtml } from "@/lib/moderation";
+import {
+  containsToxicContent,
+  sanitizeHtml,
+  containsSpamLinks,
+  isRepeatedContent,
+  isHoneypotTriggered,
+} from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
@@ -64,15 +70,46 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
   if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "Забагато запитів. Спробуйте пізніше." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
   }
 
   try {
     const body = await request.json();
     const data = createEntitySchema.parse(body);
 
-    if (containsToxicContent(data.title) || (data.description && containsToxicContent(data.description))) {
-      return NextResponse.json({ error: "Контент містить заборонені слова." }, { status: 400 });
+    // Honeypot check
+    if (isHoneypotTriggered(data.website)) {
+      // Silently reject bot submissions (return success to not tip off the bot)
+      return NextResponse.json({ id: "ok" }, { status: 201 });
+    }
+
+    const fullText = `${data.title} ${data.description || ""}`;
+
+    if (
+      containsToxicContent(data.title) ||
+      (data.description && containsToxicContent(data.description))
+    ) {
+      return NextResponse.json(
+        { error: "Content contains prohibited words." },
+        { status: 400 }
+      );
+    }
+
+    if (containsSpamLinks(fullText)) {
+      return NextResponse.json(
+        { error: "Content contains spam or too many links." },
+        { status: 400 }
+      );
+    }
+
+    if (isRepeatedContent(data.title)) {
+      return NextResponse.json(
+        { error: "Title appears to be repetitive or spam." },
+        { status: 400 }
+      );
     }
 
     const entity = await prisma.entity.create({
@@ -102,9 +139,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(entity, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json({ error: "Невірні дані форми." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid form data." },
+        { status: 400 }
+      );
     }
     console.error(error);
-    return NextResponse.json({ error: "Помилка сервера." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Server error." },
+      { status: 500 }
+    );
   }
 }

@@ -31,10 +31,17 @@ interface EntityDetail {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  person: "👤 Людина",
-  company: "🏢 Компанія",
-  thing: "📦 Річ",
-  other: "🔖 Інше",
+  person: "Person",
+  company: "Company",
+  thing: "Product",
+  other: "Other",
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  person: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  company: "bg-green-500/15 text-green-400 border border-green-500/20",
+  thing: "bg-orange-500/15 text-orange-400 border border-orange-500/20",
+  other: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
 };
 
 function CommentComponent({
@@ -50,11 +57,12 @@ function CommentComponent({
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
+  const [replyHoneypot, setReplyHoneypot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [reportSent, setReportSent] = useState(false);
 
   const handleReply = async () => {
-    if (!replyContent.trim()) return;
+    if (!replyContent.trim() || replyHoneypot) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/comments", {
@@ -64,6 +72,7 @@ function CommentComponent({
           content: replyContent,
           entityId,
           parentId: comment.id,
+          website: replyHoneypot,
         }),
       });
       if (res.ok) {
@@ -94,46 +103,77 @@ function CommentComponent({
   };
 
   return (
-    <div className={`${depth > 0 ? "ml-6 border-l-2 border-[var(--border)] pl-4" : ""}`}>
-      <div className="rounded-lg bg-[var(--bg-card)] p-3 mb-2">
-        <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{comment.content}</p>
-        <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted)]">
-          <span>{new Date(comment.createdAt).toLocaleString("uk")}</span>
-          <span className="text-[var(--text-muted)]">Анонім</span>
+    <div
+      className={`${depth > 0 ? "ml-4 sm:ml-6 border-l-2 border-[var(--border)] pl-4" : ""}`}
+    >
+      <div className="rounded-lg bg-[var(--bg-card)] border border-[var(--border)] p-4 mb-2 hover:border-[var(--border-hover)] transition-colors">
+        <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap leading-relaxed">
+          {comment.content}
+        </p>
+        <div className="mt-3 flex items-center gap-3 text-xs text-[var(--text-muted)]">
+          <span className="flex items-center gap-1">
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {new Date(comment.createdAt).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+          <span className="text-[var(--text-muted)]">Anonymous</span>
           {depth < 3 && (
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
-              className="text-[var(--accent)] hover:underline"
+              className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium"
             >
-              Відповісти
+              Reply
             </button>
           )}
           {reportSent ? (
-            <span className="text-[var(--warning)]">Скаргу надіслано</span>
+            <span className="text-[var(--warning)]">Reported</span>
           ) : (
-            <button onClick={handleReport} className="text-[var(--text-muted)] hover:text-[var(--danger)]">
-              🚩
+            <button
+              onClick={handleReport}
+              className="text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors"
+              title="Report this comment"
+            >
+              Report
             </button>
           )}
         </div>
 
         {showReplyForm && (
-          <div className="mt-3 flex gap-2">
-            <input
-              type="text"
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              placeholder="Ваша відповідь..."
-              className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
-              maxLength={2000}
-            />
-            <button
-              onClick={handleReply}
-              disabled={submitting}
-              className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
-            >
-              {submitting ? "..." : "→"}
-            </button>
+          <div className="mt-3">
+            {/* Honeypot */}
+            <div className="hp-field" aria-hidden="true">
+              <input
+                type="text"
+                name="phone"
+                value={replyHoneypot}
+                onChange={(e) => setReplyHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Write a respectful reply..."
+                className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none transition-colors"
+                maxLength={2000}
+              />
+              <button
+                onClick={handleReply}
+                disabled={submitting || !replyContent.trim()}
+                className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-colors"
+              >
+                {submitting ? "..." : "Send"}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -157,6 +197,7 @@ export default function EntityPage() {
   const [entity, setEntity] = useState<EntityDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
+  const [commentHoneypot, setCommentHoneypot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [reportSent, setReportSent] = useState(false);
   const [error, setError] = useState("");
@@ -168,10 +209,10 @@ export default function EntityPage() {
         const data = await res.json();
         setEntity(data);
       } else {
-        setError("Об'єкт не знайдено");
+        setError("Post not found");
       }
     } catch {
-      setError("Помилка завантаження");
+      setError("Loading error");
     }
     setLoading(false);
   }, [id]);
@@ -197,7 +238,7 @@ export default function EntityPage() {
   };
 
   const handleComment = async () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || commentHoneypot) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/comments", {
@@ -206,6 +247,7 @@ export default function EntityPage() {
         body: JSON.stringify({
           content: commentText,
           entityId: id,
+          website: commentHoneypot,
         }),
       });
       if (res.ok) {
@@ -213,10 +255,10 @@ export default function EntityPage() {
         fetchEntity();
       } else {
         const data = await res.json();
-        setError(data.error || "Помилка");
+        setError(data.error || "Error");
       }
     } catch {
-      setError("Помилка з'єднання");
+      setError("Connection error");
     }
     setSubmitting(false);
   };
@@ -247,25 +289,41 @@ export default function EntityPage() {
 
   if (error || !entity) {
     return (
-      <div className="py-20 text-center">
-        <p className="text-lg text-[var(--text-muted)]">{error || "Не знайдено"}</p>
-        <Link href="/" className="mt-3 inline-block text-[var(--accent)] hover:underline">
-          ← На головну
+      <div className="py-20 text-center animate-fade-in">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-card)] border border-[var(--border)]">
+          <svg className="h-8 w-8 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        </div>
+        <p className="text-lg font-medium text-[var(--text-secondary)]">
+          {error || "Not Found"}
+        </p>
+        <Link
+          href="/"
+          className="mt-3 inline-block text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+        >
+          Back to Home
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Link href="/" className="mb-4 inline-block text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
-        ← На головну
+    <div className="mx-auto max-w-3xl animate-fade-in">
+      <Link
+        href="/"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
+      >
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back to Home
       </Link>
 
       {/* Entity Header */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
         {entity.imageUrl && (
-          <div className="relative mb-4 h-64 w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)]">
+          <div className="relative mb-5 h-64 sm:h-80 w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)]">
             <Image
               src={entity.imageUrl}
               alt={entity.title}
@@ -275,88 +333,152 @@ export default function EntityPage() {
             />
           </div>
         )}
-        <div className="flex items-start justify-between">
-          <div>
-            <span className="text-xs text-[var(--text-muted)]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <span
+              className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${CATEGORY_COLORS[entity.category] || CATEGORY_COLORS.other}`}
+            >
               {CATEGORY_LABELS[entity.category] || entity.category}
             </span>
-            <h1 className="text-2xl font-bold mt-1">{entity.title}</h1>
+            <h1 className="text-2xl font-bold mt-2 tracking-tight">
+              {entity.title}
+            </h1>
           </div>
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-1 shrink-0">
             <button
               onClick={() => handleVote(1)}
-              className="rounded-lg border border-[var(--border)] px-3 py-1 text-lg hover:bg-[var(--success)]/20 hover:border-[var(--success)] transition-colors"
+              className="rounded-lg border border-[var(--border)] px-3 py-1.5 hover:bg-[var(--success-subtle)] hover:border-[var(--success)] transition-colors"
+              title="Upvote"
             >
-              👍
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+              </svg>
             </button>
-            <span className={`text-lg font-bold ${entity.rating > 0 ? "text-[var(--success)]" : entity.rating < 0 ? "text-[var(--danger)]" : "text-[var(--text-muted)]"}`}>
-              {entity.rating > 0 ? "+" : ""}{entity.rating}
+            <span
+              className={`text-lg font-bold ${entity.rating > 0 ? "text-[var(--success)]" : entity.rating < 0 ? "text-[var(--danger)]" : "text-[var(--text-muted)]"}`}
+            >
+              {entity.rating > 0 ? "+" : ""}
+              {entity.rating}
             </span>
             <button
               onClick={() => handleVote(-1)}
-              className="rounded-lg border border-[var(--border)] px-3 py-1 text-lg hover:bg-[var(--danger)]/20 hover:border-[var(--danger)] transition-colors"
+              className="rounded-lg border border-[var(--border)] px-3 py-1.5 hover:bg-[var(--danger-subtle)] hover:border-[var(--danger)] transition-colors"
+              title="Downvote"
             >
-              👎
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
             </button>
           </div>
         </div>
 
         {entity.description && (
-          <p className="mt-4 text-[var(--text-secondary)] whitespace-pre-wrap">{entity.description}</p>
+          <p className="mt-4 text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">
+            {entity.description}
+          </p>
         )}
 
         {entity.tags && entity.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {entity.tags.map((t) => (
-              <span key={t.tag.id} className="rounded-full bg-[var(--accent)]/10 px-3 py-1 text-xs text-[var(--accent)]">
+              <span
+                key={t.tag.id}
+                className="rounded-full bg-[var(--accent-subtle)] px-3 py-1 text-xs text-[var(--accent)] font-medium"
+              >
                 #{t.tag.name}
               </span>
             ))}
           </div>
         )}
 
-        <div className="mt-4 flex items-center gap-4 text-sm text-[var(--text-muted)]">
-          <span>{new Date(entity.createdAt).toLocaleString("uk")}</span>
+        <div className="mt-5 pt-4 border-t border-[var(--border)] flex items-center justify-between text-sm text-[var(--text-muted)]">
+          <span className="flex items-center gap-1.5">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {new Date(entity.createdAt).toLocaleString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
           {reportSent ? (
-            <span className="text-[var(--warning)]">Скаргу надіслано</span>
+            <span className="text-[var(--warning)] text-xs">Report submitted</span>
           ) : (
-            <button onClick={handleReportEntity} className="text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors">
-              🚩 Поскаржитися
+            <button
+              onClick={handleReportEntity}
+              className="flex items-center gap-1 text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors text-xs"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.71l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+              </svg>
+              Report
             </button>
           )}
         </div>
       </div>
 
       {/* Comments Section */}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-4">
-          💬 Коментарі ({entity.comments.length})
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <svg className="h-5 w-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+          </svg>
+          Comments ({entity.comments.length})
         </h2>
 
         {/* Add Comment */}
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4">
+          {/* Honeypot */}
+          <div className="hp-field" aria-hidden="true">
+            <input
+              type="text"
+              name="email_confirm"
+              value={commentHoneypot}
+              onChange={(e) => setCommentHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Напишіть коментар анонімно..."
-            rows={2}
-            className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none resize-none"
+            placeholder="Share your thoughts anonymously..."
+            rows={3}
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none resize-none transition-colors"
             maxLength={2000}
           />
-          <button
-            onClick={handleComment}
-            disabled={submitting || !commentText.trim()}
-            className="self-end rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-colors"
-          >
-            {submitting ? "..." : "Надіслати"}
-          </button>
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-xs text-[var(--text-muted)]">
+              Be respectful. No personal attacks or illegal content.
+            </p>
+            <button
+              onClick={handleComment}
+              disabled={submitting || !commentText.trim()}
+              className="rounded-lg bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-all"
+            >
+              {submitting ? "Sending..." : "Post Comment"}
+            </button>
+          </div>
         </div>
 
         {/* Comments List */}
         {entity.comments.length === 0 ? (
-          <p className="py-8 text-center text-[var(--text-muted)]">
-            Поки що немає коментарів. Будьте першим!
-          </p>
+          <div className="py-10 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-card)] border border-[var(--border)]">
+              <svg className="h-6 w-6 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
+              No comments yet
+            </p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              Be the first to share your thoughts on this topic.
+            </p>
+          </div>
         ) : (
           <div className="space-y-3">
             {entity.comments.map((comment) => (
