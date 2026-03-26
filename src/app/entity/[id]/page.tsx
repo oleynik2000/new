@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations, useLocale } from "@/lib/i18n";
 
 interface Comment {
   id: string;
@@ -30,13 +31,6 @@ interface EntityDetail {
   votes: { value: number; voterHash: string }[];
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  person: "Person",
-  company: "Company",
-  thing: "Product",
-  other: "Other",
-};
-
 const CATEGORY_COLORS: Record<string, string> = {
   person: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
   company: "bg-green-500/15 text-green-400 border border-green-500/20",
@@ -55,6 +49,8 @@ function CommentComponent({
   depth: number;
   onReplyAdded: () => void;
 }) {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [replyHoneypot, setReplyHoneypot] = useState("");
@@ -115,31 +111,31 @@ function CommentComponent({
             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {new Date(comment.createdAt).toLocaleString("en-US", {
+            {new Date(comment.createdAt).toLocaleString(locale, {
               month: "short",
               day: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })}
           </span>
-          <span className="text-[var(--text-muted)]">Anonymous</span>
+          <span className="text-[var(--text-muted)]">{t.common.anonymous}</span>
           {depth < 3 && (
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
               className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium"
             >
-              Reply
+              {t.entity.reply}
             </button>
           )}
           {reportSent ? (
-            <span className="text-[var(--warning)]">Reported</span>
+            <span className="text-[var(--warning)]">{t.common.reported}</span>
           ) : (
             <button
               onClick={handleReport}
               className="text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors"
-              title="Report this comment"
+              title={t.common.report}
             >
-              Report
+              {t.common.report}
             </button>
           )}
         </div>
@@ -162,7 +158,7 @@ function CommentComponent({
                 type="text"
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="Write a respectful reply..."
+                placeholder={t.entity.replyPlaceholder}
                 className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none transition-colors"
                 maxLength={2000}
               />
@@ -171,7 +167,7 @@ function CommentComponent({
                 disabled={submitting || !replyContent.trim()}
                 className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-colors"
               >
-                {submitting ? "..." : "Send"}
+                {submitting ? "..." : t.common.send}
               </button>
             </div>
           </div>
@@ -194,6 +190,8 @@ function CommentComponent({
 export default function EntityPage() {
   const params = useParams();
   const id = params.id as string;
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [entity, setEntity] = useState<EntityDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -202,6 +200,13 @@ export default function EntityPage() {
   const [reportSent, setReportSent] = useState(false);
   const [error, setError] = useState("");
 
+  const CATEGORY_LABELS: Record<string, string> = {
+    person: t.home.person,
+    company: t.home.company,
+    thing: t.home.product,
+    other: t.home.other,
+  };
+
   const fetchEntity = useCallback(async () => {
     try {
       const res = await fetch(`/api/entities/${id}`);
@@ -209,13 +214,13 @@ export default function EntityPage() {
         const data = await res.json();
         setEntity(data);
       } else {
-        setError("Post not found");
+        setError(t.entity.postNotFound);
       }
     } catch {
-      setError("Loading error");
+      setError(t.common.loadingError);
     }
     setLoading(false);
-  }, [id]);
+  }, [id, t.entity.postNotFound, t.common.loadingError]);
 
   useEffect(() => {
     fetchEntity();
@@ -258,7 +263,7 @@ export default function EntityPage() {
         setError(data.error || "Error");
       }
     } catch {
-      setError("Connection error");
+      setError(t.entity.connectionError);
     }
     setSubmitting(false);
   };
@@ -296,13 +301,13 @@ export default function EntityPage() {
           </svg>
         </div>
         <p className="text-lg font-medium text-[var(--text-secondary)]">
-          {error || "Not Found"}
+          {error || t.common.notFound}
         </p>
         <Link
           href="/"
           className="mt-3 inline-block text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
         >
-          Back to Home
+          {t.common.backToHome}
         </Link>
       </div>
     );
@@ -317,7 +322,7 @@ export default function EntityPage() {
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
         </svg>
-        Back to Home
+        {t.common.backToHome}
       </Link>
 
       {/* Entity Header */}
@@ -380,12 +385,12 @@ export default function EntityPage() {
 
         {entity.tags && entity.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {entity.tags.map((t) => (
+            {entity.tags.map((tg) => (
               <span
-                key={t.tag.id}
+                key={tg.tag.id}
                 className="rounded-full bg-[var(--accent-subtle)] px-3 py-1 text-xs text-[var(--accent)] font-medium"
               >
-                #{t.tag.name}
+                #{tg.tag.name}
               </span>
             ))}
           </div>
@@ -396,7 +401,7 @@ export default function EntityPage() {
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {new Date(entity.createdAt).toLocaleString("en-US", {
+            {new Date(entity.createdAt).toLocaleString(locale, {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -405,7 +410,7 @@ export default function EntityPage() {
             })}
           </span>
           {reportSent ? (
-            <span className="text-[var(--warning)] text-xs">Report submitted</span>
+            <span className="text-[var(--warning)] text-xs">{t.common.reportSubmitted}</span>
           ) : (
             <button
               onClick={handleReportEntity}
@@ -414,7 +419,7 @@ export default function EntityPage() {
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.71l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
               </svg>
-              Report
+              {t.common.report}
             </button>
           )}
         </div>
@@ -426,7 +431,7 @@ export default function EntityPage() {
           <svg className="h-5 w-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
           </svg>
-          Comments ({entity.comments.length})
+          {t.entity.commentsTitle} ({entity.comments.length})
         </h2>
 
         {/* Add Comment */}
@@ -445,21 +450,21 @@ export default function EntityPage() {
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Share your thoughts anonymously..."
+            placeholder={t.entity.commentPlaceholder}
             rows={3}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none resize-none transition-colors"
             maxLength={2000}
           />
           <div className="mt-3 flex items-center justify-between">
             <p className="text-xs text-[var(--text-muted)]">
-              Be respectful. No personal attacks or illegal content.
+              {t.entity.commentRules}
             </p>
             <button
               onClick={handleComment}
               disabled={submitting || !commentText.trim()}
               className="rounded-lg bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-all"
             >
-              {submitting ? "Sending..." : "Post Comment"}
+              {submitting ? t.entity.sending : t.entity.postComment}
             </button>
           </div>
         </div>
@@ -473,10 +478,10 @@ export default function EntityPage() {
               </svg>
             </div>
             <p className="text-sm font-medium text-[var(--text-secondary)]">
-              No comments yet
+              {t.entity.noCommentsYet}
             </p>
             <p className="text-xs text-[var(--text-muted)] mt-1">
-              Be the first to share your thoughts on this topic.
+              {t.entity.noCommentsDescription}
             </p>
           </div>
         ) : (

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations, useLocale } from "@/lib/i18n";
 
 interface Tag {
   tag: { id: string; name: string };
@@ -20,13 +21,6 @@ interface Entity {
   tags: Tag[];
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  person: "Person",
-  company: "Company",
-  thing: "Product",
-  other: "Other",
-};
-
 const CATEGORY_COLORS: Record<string, string> = {
   person: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
   company: "bg-green-500/15 text-green-400 border border-green-500/20",
@@ -35,6 +29,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function HomePage() {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [entities, setEntities] = useState<Entity[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
@@ -42,6 +38,13 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    person: t.home.person,
+    company: t.home.company,
+    thing: t.home.product,
+    other: t.home.other,
+  };
 
   const fetchEntities = useCallback(async () => {
     setLoading(true);
@@ -75,39 +78,37 @@ export default function HomePage() {
       {/* Hero Section */}
       <div className="mb-10 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-8 sm:p-10">
         <h1 className="text-3xl sm:text-4xl font-bold mb-3 tracking-tight">
-          Speak Freely. Stay Anonymous.
+          {t.home.heroTitle}
         </h1>
         <p className="text-[var(--text-secondary)] text-lg max-w-2xl leading-relaxed">
-          Share honest opinions about people, companies, and products without
-          revealing your identity. Your voice matters &mdash; and here, it&apos;s
-          protected.
+          {t.home.heroDescription}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <Link
             href="/add"
             className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md transition-all"
           >
-            Start a Discussion
+            {t.home.startDiscussion}
           </Link>
           <Link
             href="/guidelines"
             className="rounded-lg border border-[var(--border)] px-5 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all"
           >
-            Read Guidelines
+            {t.home.readGuidelines}
           </Link>
         </div>
         <div className="mt-6 flex items-center gap-4 text-xs text-[var(--text-muted)]">
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full bg-[var(--success)]"></span>
-            Moderated platform
+            {t.home.moderatedPlatform}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full bg-[var(--accent)]"></span>
-            100% anonymous
+            {t.home.fullyAnonymous}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full bg-[var(--warning)]"></span>
-            Community-driven
+            {t.home.communityDriven}
           </span>
         </div>
       </div>
@@ -130,7 +131,7 @@ export default function HomePage() {
           </svg>
           <input
             type="text"
-            placeholder="Search discussions..."
+            placeholder={t.home.searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] pl-10 pr-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none transition-colors"
@@ -141,20 +142,20 @@ export default function HomePage() {
           onChange={(e) => setSort(e.target.value)}
           className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none cursor-pointer"
         >
-          <option value="newest">Newest</option>
-          <option value="popular">Most Popular</option>
-          <option value="discussed">Most Discussed</option>
+          <option value="newest">{t.home.newest}</option>
+          <option value="popular">{t.home.mostPopular}</option>
+          <option value="discussed">{t.home.mostDiscussed}</option>
         </select>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none cursor-pointer"
         >
-          <option value="all">All Categories</option>
-          <option value="person">Person</option>
-          <option value="company">Company</option>
-          <option value="thing">Product</option>
-          <option value="other">Other</option>
+          <option value="all">{t.home.allCategories}</option>
+          <option value="person">{t.home.person}</option>
+          <option value="company">{t.home.company}</option>
+          <option value="thing">{t.home.product}</option>
+          <option value="other">{t.home.other}</option>
         </select>
       </div>
 
@@ -170,13 +171,13 @@ export default function HomePage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
             </svg>
           </div>
-          <p className="text-lg font-medium text-[var(--text-secondary)] mb-1">No posts yet</p>
-          <p className="text-sm text-[var(--text-muted)] mb-4">Be the first to start a discussion on this platform.</p>
+          <p className="text-lg font-medium text-[var(--text-secondary)] mb-1">{t.home.noPostsYet}</p>
+          <p className="text-sm text-[var(--text-muted)] mb-4">{t.home.noPostsDescription}</p>
           <Link
             href="/add"
             className="inline-block rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
           >
-            Create First Post
+            {t.home.createFirstPost}
           </Link>
         </div>
       ) : (
@@ -216,12 +217,12 @@ export default function HomePage() {
               )}
               {entity.tags && entity.tags.length > 0 && (
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
-                  {entity.tags.map((t) => (
+                  {entity.tags.map((tg) => (
                     <span
-                      key={t.tag.id}
+                      key={tg.tag.id}
                       className="rounded-full bg-[var(--accent-subtle)] px-2.5 py-0.5 text-[11px] text-[var(--accent)] font-medium"
                     >
-                      #{t.tag.name}
+                      #{tg.tag.name}
                     </span>
                   ))}
                 </div>
@@ -231,11 +232,11 @@ export default function HomePage() {
                   className={`font-medium ${entity.rating > 0 ? "text-[var(--success)]" : entity.rating < 0 ? "text-[var(--danger)]" : ""}`}
                 >
                   {entity.rating > 0 ? "+" : ""}
-                  {entity.rating} pts
+                  {entity.rating} {t.common.pts}
                 </span>
-                <span>{entity.commentCount} comments</span>
+                <span>{entity.commentCount} {t.common.comments}</span>
                 <span className="ml-auto">
-                  {new Date(entity.createdAt).toLocaleDateString("en-US", {
+                  {new Date(entity.createdAt).toLocaleDateString(locale, {
                     month: "short",
                     day: "numeric",
                   })}
@@ -254,17 +255,17 @@ export default function HomePage() {
             onClick={() => setPage(page - 1)}
             className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-30 hover:bg-[var(--bg-hover)] hover:border-[var(--border-hover)] transition-colors"
           >
-            Previous
+            {t.common.previous}
           </button>
           <span className="flex items-center px-4 text-sm text-[var(--text-muted)]">
-            Page {page} of {totalPages}
+            {t.common.page} {page} {t.common.of} {totalPages}
           </span>
           <button
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
             className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-30 hover:bg-[var(--bg-hover)] hover:border-[var(--border-hover)] transition-colors"
           >
-            Next
+            {t.common.next}
           </button>
         </div>
       )}

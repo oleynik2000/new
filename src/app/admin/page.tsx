@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "@/lib/i18n";
 
 interface ReportItem {
   id: string;
@@ -22,6 +23,8 @@ interface AdminStats {
 }
 
 export default function AdminPage() {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -67,28 +70,28 @@ export default function AdminPage() {
 
   if (!stats)
     return (
-      <p className="text-center text-[var(--text-muted)]">Loading error</p>
+      <p className="text-center text-[var(--text-muted)]">{t.common.loadingError}</p>
     );
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-in">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">
-          Admin Dashboard
+          {t.admin.dashboard}
         </h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Monitor and moderate platform content.
+          {t.admin.monitorContent}
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 mb-8">
         {[
-          { label: "Posts", value: stats.totalEntities, color: "text-[var(--accent)]" },
-          { label: "Comments", value: stats.totalComments, color: "text-[var(--accent)]" },
-          { label: "Reports", value: stats.totalReports, color: "text-[var(--warning)]" },
-          { label: "Hidden Posts", value: stats.hiddenEntities, color: "text-[var(--danger)]" },
-          { label: "Hidden Comments", value: stats.hiddenComments, color: "text-[var(--danger)]" },
+          { label: t.admin.posts, value: stats.totalEntities, color: "text-[var(--accent)]" },
+          { label: t.admin.commentsLabel, value: stats.totalComments, color: "text-[var(--accent)]" },
+          { label: t.admin.reports, value: stats.totalReports, color: "text-[var(--warning)]" },
+          { label: t.admin.hiddenPosts, value: stats.hiddenEntities, color: "text-[var(--danger)]" },
+          { label: t.admin.hiddenComments, value: stats.hiddenComments, color: "text-[var(--danger)]" },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -119,7 +122,7 @@ export default function AdminPage() {
             d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.71l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5"
           />
         </svg>
-        Recent Reports
+        {t.admin.recentReports}
       </h2>
       {stats.recentReports.length === 0 ? (
         <div className="text-center py-10">
@@ -139,10 +142,10 @@ export default function AdminPage() {
             </svg>
           </div>
           <p className="text-sm font-medium text-[var(--text-secondary)]">
-            No reports yet
+            {t.admin.noReportsYet}
           </p>
           <p className="text-xs text-[var(--text-muted)] mt-1">
-            The community is behaving well. No reports have been submitted.
+            {t.admin.noReportsDescription}
           </p>
         </div>
       ) : (
@@ -162,10 +165,10 @@ export default function AdminPage() {
                           : "bg-orange-500/15 text-orange-400 border border-orange-500/20"
                       }`}
                     >
-                      {report.targetType === "entity" ? "Post" : "Comment"}
+                      {report.targetType === "entity" ? t.admin.post : t.admin.comment}
                     </span>
                     <span className="text-xs text-[var(--text-muted)]">
-                      {new Date(report.createdAt).toLocaleString("en-US", {
+                      {new Date(report.createdAt).toLocaleString(locale, {
                         month: "short",
                         day: "numeric",
                         hour: "2-digit",
@@ -180,7 +183,7 @@ export default function AdminPage() {
                   </p>
                   {report.reason && (
                     <p className="text-xs text-[var(--text-muted)] mt-1">
-                      Reason: {report.reason}
+                      {t.admin.reason}: {report.reason}
                     </p>
                   )}
                 </div>
@@ -191,7 +194,7 @@ export default function AdminPage() {
                     }
                     className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning-subtle)] px-3 py-1.5 text-xs font-medium text-[var(--warning)] hover:bg-[var(--warning)]/20 transition-colors"
                   >
-                    Hide
+                    {t.admin.hide}
                   </button>
                   <button
                     onClick={() =>
@@ -199,7 +202,7 @@ export default function AdminPage() {
                     }
                     className="rounded-lg border border-[var(--success)]/30 bg-[var(--success-subtle)] px-3 py-1.5 text-xs font-medium text-[var(--success)] hover:bg-[var(--success)]/20 transition-colors"
                   >
-                    Show
+                    {t.admin.show}
                   </button>
                   <button
                     onClick={() =>
@@ -211,7 +214,7 @@ export default function AdminPage() {
                     }
                     className="rounded-lg border border-[var(--danger)]/30 bg-[var(--danger-subtle)] px-3 py-1.5 text-xs font-medium text-[var(--danger)] hover:bg-[var(--danger)]/20 transition-colors"
                   >
-                    Delete
+                    {t.admin.delete}
                   </button>
                 </div>
               </div>

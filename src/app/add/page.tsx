@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "@/lib/i18n";
 
 export default function AddEntityPage() {
   const router = useRouter();
+  const t = useTranslations();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -31,10 +33,10 @@ export default function AddEntityPage() {
       if (res.ok) {
         setImageUrl(data.url);
       } else {
-        setError(data.error || "Upload failed");
+        setError(data.error || t.add.uploadFailed);
       }
     } catch {
-      setError("File upload error");
+      setError(t.add.fileUploadError);
     }
     setUploading(false);
   };
@@ -45,7 +47,7 @@ export default function AddEntityPage() {
     if (honeypot) return;
 
     if (!title.trim()) {
-      setError("Title is required");
+      setError(t.add.titleRequired);
       return;
     }
 
@@ -55,7 +57,7 @@ export default function AddEntityPage() {
     try {
       const tagList = tags
         .split(",")
-        .map((t) => t.trim())
+        .map((tg) => tg.trim())
         .filter(Boolean);
 
       const res = await fetch("/api/entities", {
@@ -75,10 +77,10 @@ export default function AddEntityPage() {
       if (res.ok) {
         router.push(`/entity/${data.id}`);
       } else {
-        setError(data.error || "Creation failed");
+        setError(data.error || t.add.creationFailed);
       }
     } catch {
-      setError("Connection error. Please try again.");
+      setError(t.add.connectionError);
     }
     setSubmitting(false);
   };
@@ -86,22 +88,22 @@ export default function AddEntityPage() {
   return (
     <div className="mx-auto max-w-2xl animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Create New Post</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.add.createNewPost}</h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Share something for the community to discuss anonymously.
+          {t.add.shareForCommunity}
         </p>
       </div>
 
       {/* Guidelines Banner */}
       <div className="mb-6 rounded-lg border border-[var(--accent)]/20 bg-[var(--accent-subtle)] p-4">
         <h3 className="text-sm font-medium text-[var(--accent)] mb-2">
-          Before you post
+          {t.add.beforeYouPost}
         </h3>
         <ul className="space-y-1 text-xs text-[var(--text-secondary)]">
-          <li>- Be respectful and constructive in your discussions</li>
-          <li>- No illegal content, harassment, or personal attacks</li>
-          <li>- Provide accurate information when possible</li>
-          <li>- All posts are moderated and must follow our community guidelines</li>
+          <li>- {t.add.rule1}</li>
+          <li>- {t.add.rule2}</li>
+          <li>- {t.add.rule3}</li>
+          <li>- {t.add.rule4}</li>
         </ul>
       </div>
 
@@ -129,71 +131,71 @@ export default function AddEntityPage() {
         {/* Title */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
-            Title <span className="text-[var(--danger)]">*</span>
+            {t.add.titleLabel} <span className="text-[var(--danger)]">*</span>
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter a clear, descriptive title"
+            placeholder={t.add.titlePlaceholder}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none transition-colors"
             maxLength={200}
             required
           />
           <p className="mt-1 text-xs text-[var(--text-muted)]">
-            {title.length}/200 characters
+            {title.length}/200 {t.common.characters}
           </p>
         </div>
 
         {/* Description */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
-            Description
+            {t.add.descriptionLabel}
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Provide context and details (optional)"
+            placeholder={t.add.descriptionPlaceholder}
             rows={4}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none resize-none transition-colors"
             maxLength={5000}
           />
           <p className="mt-1 text-xs text-[var(--text-muted)]">
-            {description.length}/5000 characters
+            {description.length}/5000 {t.common.characters}
           </p>
         </div>
 
         {/* Category */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
-            Category
+            {t.add.categoryLabel}
           </label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none cursor-pointer transition-colors"
           >
-            <option value="person">Person</option>
-            <option value="company">Company</option>
-            <option value="thing">Product</option>
-            <option value="other">Other</option>
+            <option value="person">{t.home.person}</option>
+            <option value="company">{t.home.company}</option>
+            <option value="thing">{t.home.product}</option>
+            <option value="other">{t.home.other}</option>
           </select>
         </div>
 
         {/* Image */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
-            Image (optional)
+            {t.add.imageLabel}
           </label>
           <div className="space-y-2">
             <input
               type="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Image URL (https://...)"
+              placeholder={t.add.imageUrlPlaceholder}
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none transition-colors"
             />
-            <div className="text-center text-xs text-[var(--text-muted)]">or</div>
+            <div className="text-center text-xs text-[var(--text-muted)]">{t.common.or}</div>
             <label className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-[var(--border)] bg-[var(--bg-secondary)] p-6 transition-colors hover:border-[var(--accent)]/50 hover:bg-[var(--bg-hover)]">
               <input
                 type="file"
@@ -206,17 +208,17 @@ export default function AddEntityPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
                 </svg>
                 <span className="text-sm text-[var(--text-muted)]">
-                  {uploading ? "Uploading..." : "Click to upload an image"}
+                  {uploading ? t.add.uploading : t.add.clickToUpload}
                 </span>
                 <span className="block text-xs text-[var(--text-muted)] mt-1">
-                  JPEG, PNG, WebP, GIF up to 5MB
+                  {t.add.imageFormats}
                 </span>
               </div>
             </label>
           </div>
           {imageUrl && (
             <p className="mt-2 text-xs text-[var(--success)]">
-              Image added: {imageUrl.substring(0, 50)}...
+              {t.add.imageAdded}: {imageUrl.substring(0, 50)}...
             </p>
           )}
         </div>
@@ -224,17 +226,17 @@ export default function AddEntityPage() {
         {/* Tags */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
-            Tags (comma-separated)
+            {t.add.tagsLabel}
           </label>
           <input
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder="technology, business, review"
+            placeholder={t.add.tagsPlaceholder}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none transition-colors"
           />
           <p className="mt-1 text-xs text-[var(--text-muted)]">
-            Add relevant tags to help others find your post
+            {t.add.tagsHelp}
           </p>
         </div>
 
@@ -244,10 +246,10 @@ export default function AddEntityPage() {
             disabled={submitting || uploading}
             className="w-full rounded-lg bg-[var(--accent)] px-6 py-3 font-medium text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 shadow-sm hover:shadow-md transition-all"
           >
-            {submitting ? "Publishing..." : "Publish Anonymously"}
+            {submitting ? t.add.publishing : t.add.publishAnonymously}
           </button>
           <p className="mt-3 text-center text-xs text-[var(--text-muted)]">
-            Your identity is never stored or shared. All posts are anonymous.
+            {t.add.identityNeverStored}
           </p>
         </div>
       </form>

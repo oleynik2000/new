@@ -1,82 +1,66 @@
-import Link from "next/link";
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "About — AnonBoard",
-  description:
-    "Learn about AnonBoard, an anonymous discussion platform built for honest, open conversations.",
-};
+import Link from "next/link";
+import { useTranslations } from "@/lib/i18n";
 
 export default function AboutPage() {
+  const t = useTranslations();
+
   return (
     <div className="mx-auto max-w-3xl animate-fade-in">
       <h1 className="text-3xl font-bold tracking-tight mb-6">
-        About AnonBoard
+        {t.about.title}
       </h1>
 
       <div className="space-y-6 text-[var(--text-secondary)] leading-relaxed">
         <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-3">
-            Our Mission
+            {t.about.missionTitle}
           </h2>
-          <p>
-            AnonBoard is a platform designed for open, honest discussions. We
-            believe that anonymity empowers people to share genuine opinions
-            about companies, products, public figures, and more &mdash; without
-            fear of judgment or retaliation.
-          </p>
-          <p className="mt-3">
-            Whether you want to share a review, discuss a trending topic, or
-            raise awareness about an issue, AnonBoard provides a safe and
-            moderated space for your voice.
-          </p>
+          <p>{t.about.missionText1}</p>
+          <p className="mt-3">{t.about.missionText2}</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-3">
-            Why Anonymous?
+            {t.about.whyAnonymousTitle}
           </h2>
-          <p>
-            Anonymity is not about hiding &mdash; it&apos;s about freedom of
-            expression. Many people hesitate to share honest feedback because
-            they worry about social consequences. AnonBoard removes that
-            barrier.
-          </p>
+          <p>{t.about.whyAnonymousText}</p>
           <ul className="mt-3 space-y-2">
             <li className="flex items-start gap-2">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)] mt-2 shrink-0"></span>
               <span>
                 <strong className="text-[var(--text-primary)]">
-                  Honest reviews:
+                  {t.about.honestReviews}
                 </strong>{" "}
-                Share your real experience with products and services
+                {t.about.honestReviewsDesc}
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)] mt-2 shrink-0"></span>
               <span>
                 <strong className="text-[var(--text-primary)]">
-                  Open discussions:
+                  {t.about.openDiscussions}
                 </strong>{" "}
-                Debate ideas without personal attacks
+                {t.about.openDiscussionsDesc}
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)] mt-2 shrink-0"></span>
               <span>
                 <strong className="text-[var(--text-primary)]">
-                  Whistleblowing:
+                  {t.about.whistleblowing}
                 </strong>{" "}
-                Report issues that matter to the community
+                {t.about.whistleblowingDesc}
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)] mt-2 shrink-0"></span>
               <span>
                 <strong className="text-[var(--text-primary)]">
-                  Privacy first:
+                  {t.about.privacyFirst}
                 </strong>{" "}
-                We never collect or store personal identity data
+                {t.about.privacyFirstDesc}
               </span>
             </li>
           </ul>
@@ -84,68 +68,42 @@ export default function AboutPage() {
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-3">
-            How It Works
+            {t.about.howItWorksTitle}
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-lg bg-[var(--bg-secondary)] p-4">
-              <div className="text-lg font-bold text-[var(--accent)] mb-2">
-                1
-              </div>
+              <div className="text-lg font-bold text-[var(--accent)] mb-2">1</div>
               <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
-                Create a Post
+                {t.about.step1Title}
               </h3>
-              <p className="text-xs">
-                Share a topic about a person, company, product, or anything
-                else. No account required.
-              </p>
+              <p className="text-xs">{t.about.step1Desc}</p>
             </div>
             <div className="rounded-lg bg-[var(--bg-secondary)] p-4">
-              <div className="text-lg font-bold text-[var(--accent)] mb-2">
-                2
-              </div>
+              <div className="text-lg font-bold text-[var(--accent)] mb-2">2</div>
               <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
-                Discuss & Vote
+                {t.about.step2Title}
               </h3>
-              <p className="text-xs">
-                Comment on posts, reply to others, and vote to highlight the
-                most relevant content.
-              </p>
+              <p className="text-xs">{t.about.step2Desc}</p>
             </div>
             <div className="rounded-lg bg-[var(--bg-secondary)] p-4">
-              <div className="text-lg font-bold text-[var(--accent)] mb-2">
-                3
-              </div>
+              <div className="text-lg font-bold text-[var(--accent)] mb-2">3</div>
               <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
-                Stay Safe
+                {t.about.step3Title}
               </h3>
-              <p className="text-xs">
-                Report inappropriate content. Our moderation system keeps the
-                platform clean and respectful.
-              </p>
+              <p className="text-xs">{t.about.step3Desc}</p>
             </div>
           </div>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-3">
-            Our Commitment
+            {t.about.commitmentTitle}
           </h2>
-          <p>
-            We are committed to maintaining a platform that is safe, fair, and
-            useful. All content is subject to our{" "}
-            <Link
-              href="/guidelines"
-              className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline"
-            >
-              Community Guidelines
-            </Link>
-            . We use a combination of automated content filters, rate limiting,
-            and community reporting to prevent abuse.
-          </p>
+          <p>{t.about.commitmentText}</p>
           <div className="mt-4 flex items-center gap-2 text-sm">
             <span className="inline-block h-2 w-2 rounded-full bg-[var(--success)]"></span>
             <span className="text-[var(--text-muted)]">
-              Platform actively moderated 24/7
+              {t.about.activelyModerated247}
             </span>
           </div>
         </div>
@@ -156,7 +114,7 @@ export default function AboutPage() {
           href="/"
           className="inline-block rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
         >
-          Browse Discussions
+          {t.about.browseDiscussions}
         </Link>
       </div>
     </div>
