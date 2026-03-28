@@ -5,6 +5,8 @@ export const createEntitySchema = z.object({
   description: z.string().max(5000).optional(),
   imageUrl: z.string().url().optional().or(z.literal("")),
   category: z.enum(["person", "company", "thing", "other"]),
+  contentType: z.enum(["review", "horoscope"]).optional().default("review"),
+  zodiacSign: z.string().optional(),
   tags: z.array(z.string()).optional(),
   website: z.string().optional(), // honeypot field
 });

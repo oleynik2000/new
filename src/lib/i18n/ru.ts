@@ -24,6 +24,14 @@ const ru: Translations = {
     pts: "баллов",
     or: "или",
     characters: "символов",
+    home: "Главная",
+    profile: "Профиль",
+    notifications: "Уведомления",
+    loadMore: "Загрузить ещё",
+    noMore: "Больше нет",
+    today: "Сегодня",
+    trending: "Тренды",
+    whatsNew: "Что нового сегодня?",
   },
 
   footer: {
@@ -318,6 +326,71 @@ const ru: Translations = {
     en: "English",
     ru: "Русский",
     es: "Español",
+  },
+
+  horoscope: {
+    title: "Гороскопы",
+    zodiacSigns: {
+      aries: "Овен",
+      taurus: "Телец",
+      gemini: "Близнецы",
+      cancer: "Рак",
+      leo: "Лев",
+      virgo: "Дева",
+      libra: "Весы",
+      scorpio: "Скорпион",
+      sagittarius: "Стрелец",
+      capricorn: "Козерог",
+      aquarius: "Водолей",
+      pisces: "Рыбы",
+    },
+    general: "Общий",
+    filterReviews: "Отзывы",
+    filterHoroscopes: "Гороскопы",
+    filterAll: "Все",
+    contentType: "Тип контента",
+    selectZodiac: "Выберите знак зодиака",
+    publishHoroscope: "Опубликовать гороскоп",
+  },
+
+  profile: {
+    title: "Мой профиль",
+    posts: "Посты",
+    votes: "Голоса",
+    badges: "Бейджи",
+    noBadges: "Бейджей пока нет. Продолжайте быть активными!",
+    streakDays: "{n} дней подряд!",
+    rankNovice: "Новичок",
+    rankActive: "Активный",
+    rankExpert: "Эксперт",
+    rankLegend: "Легенда",
+    pointsToNext: "до следующего ранга",
+    dailyStreak: "Ежедневная серия",
+  },
+
+  notificationsPage: {
+    title: "Уведомления",
+    markAllRead: "Отметить все прочитанным",
+    noNotifications: "Уведомлений нет",
+    replyNotification: "ответил(а) на ваш комментарий",
+    reactionNotification: "отреагировал(а) на ваш пост",
+    newPostNotification: "Новый пост в категории",
+  },
+
+  trends: {
+    popularToday: "Популярное сегодня",
+    mostDiscussedWeek: "Самое обсуждаемое за неделю",
+    trendingTags: "Популярные теги",
+    newToday: "Новое сегодня",
+    postsToday: "постов сегодня",
+  },
+
+  mobileNav: {
+    home: "Главная",
+    add: "Добавить",
+    profile: "Профиль",
+    notifications: "Уведомления",
+    trending: "Тренды",
   },
 };
 

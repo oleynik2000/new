@@ -14,6 +14,9 @@ async function main() {
       "entertainment",
       "sports",
       "education",
+      "гороскоп",
+      "астрологія",
+      "знакизодіаку",
     ].map((name) =>
       prisma.tag.upsert({ where: { name }, update: {}, create: { name } })
     )
@@ -93,6 +96,33 @@ async function main() {
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=600",
       tagNames: ["technology", "entertainment"],
     },
+    {
+      title: "Гороскоп на тиждень: Овен",
+      description:
+        "Цього тижня Овни відчують прилив енергії та натхнення. Зірки сприяють новим починанням та важливим рішенням. Не бійтеся ризикувати!",
+      category: "other",
+      contentType: "horoscope",
+      zodiacSign: "aries",
+      tagNames: ["гороскоп", "астрологія", "знакизодіаку"],
+    },
+    {
+      title: "Гороскоп на тиждень: Телець",
+      description:
+        "Тельцям варто зосередитися на фінансових питаннях. Можливі несподівані доходи або вигідні пропозиції. Будьте уважні до деталей.",
+      category: "other",
+      contentType: "horoscope",
+      zodiacSign: "taurus",
+      tagNames: ["гороскоп", "астрологія", "знакизодіаку"],
+    },
+    {
+      title: "Загальний гороскоп на березень 2026",
+      description:
+        "Березень принесе зміни для всіх знаків зодіаку. Це час для самоаналізу та планування майбутнього. Зірки радять бути відкритими до нових можливостей.",
+      category: "other",
+      contentType: "horoscope",
+      zodiacSign: "",
+      tagNames: ["гороскоп", "астрологія"],
+    },
   ];
 
   const commentSets = [
@@ -113,13 +143,33 @@ async function main() {
     ],
   ];
 
+  // Create badges
+  const badgeData = [
+    { key: "first_post", nameUk: "Перший пост", nameEn: "First Post", nameRu: "Первый пост", nameEs: "Primera publicacion", descUk: "Опублікували перший пост", descEn: "Published first post", descRu: "Опубликовали первый пост", descEs: "Publicaste tu primera publicacion", icon: "📝", threshold: 1 },
+    { key: "commentator", nameUk: "Коментатор", nameEn: "Commentator", nameRu: "Комментатор", nameEs: "Comentarista", descUk: "Залишили 10 коментарів", descEn: "Left 10 comments", descRu: "Оставили 10 комментариев", descEs: "Dejaste 10 comentarios", icon: "💬", threshold: 10 },
+    { key: "popular", nameUk: "Популярний", nameEn: "Popular", nameRu: "Популярный", nameEs: "Popular", descUk: "Набрали 50 балів", descEn: "Earned 50 points", descRu: "Набрали 50 баллов", descEs: "Ganaste 50 puntos", icon: "⭐", threshold: 50 },
+    { key: "expert", nameUk: "Експерт", nameEn: "Expert", nameRu: "Эксперт", nameEs: "Experto", descUk: "Набрали 200 балів", descEn: "Earned 200 points", descRu: "Набрали 200 баллов", descEs: "Ganaste 200 puntos", icon: "🏆", threshold: 200 },
+    { key: "streak_7", nameUk: "Тижнева серія", nameEn: "Week Streak", nameRu: "Недельная серия", nameEs: "Racha semanal", descUk: "7 днів поспіль", descEn: "7 day streak", descRu: "7 дней подряд", descEs: "7 dias seguidos", icon: "🔥", threshold: 7 },
+    { key: "legend", nameUk: "Легенда", nameEn: "Legend", nameRu: "Легенда", nameEs: "Leyenda", descUk: "Набрали 500 балів", descEn: "Earned 500 points", descRu: "Набрали 500 баллов", descEs: "Ganaste 500 puntos", icon: "👑", threshold: 500 },
+  ];
+
+  for (const badge of badgeData) {
+    await prisma.badge.upsert({
+      where: { key: badge.key },
+      update: {},
+      create: badge,
+    });
+  }
+
   for (const entityData of entities) {
     const entity = await prisma.entity.create({
       data: {
         title: entityData.title,
         description: entityData.description,
         category: entityData.category,
-        imageUrl: entityData.imageUrl,
+        contentType: entityData.contentType || "review",
+        zodiacSign: entityData.zodiacSign || null,
+        imageUrl: entityData.imageUrl || null,
         tags: {
           create: entityData.tagNames.map((name) => ({
             tagId: tags.find((t) => t.name === name)!.id,
@@ -166,7 +216,7 @@ async function main() {
     }
   }
 
-  console.log("Seed data created successfully!");
+  console.log("Seed data created successfully! (with horoscopes and badges)");
 }
 
 main()

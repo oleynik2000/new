@@ -11,6 +11,8 @@ export default function AddEntityPage() {
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("other");
+  const [contentType, setContentType] = useState("review");
+  const [zodiacSign, setZodiacSign] = useState("");
   const [tags, setTags] = useState("");
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -68,6 +70,8 @@ export default function AddEntityPage() {
           description: description || undefined,
           imageUrl: imageUrl || undefined,
           category,
+          contentType,
+          zodiacSign: contentType === "horoscope" ? zodiacSign || undefined : undefined,
           tags: tagList.length > 0 ? tagList : undefined,
           website: honeypot,
         }),
@@ -165,22 +169,74 @@ export default function AddEntityPage() {
           </p>
         </div>
 
-        {/* Category */}
+        {/* Content Type */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
-            {t.add.categoryLabel}
+            {t.horoscope.contentType}
           </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none cursor-pointer transition-colors"
-          >
-            <option value="person">{t.home.person}</option>
-            <option value="company">{t.home.company}</option>
-            <option value="thing">{t.home.product}</option>
-            <option value="other">{t.home.other}</option>
-          </select>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setContentType("review")}
+              className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
+                contentType === "review"
+                  ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
+                  : "border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
+              }`}
+            >
+              {t.horoscope.filterReviews}
+            </button>
+            <button
+              type="button"
+              onClick={() => setContentType("horoscope")}
+              className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
+                contentType === "horoscope"
+                  ? "border-indigo-500 bg-indigo-500/10 text-indigo-400"
+                  : "border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
+              }`}
+            >
+              {"\u2728"} {t.horoscope.filterHoroscopes}
+            </button>
+          </div>
         </div>
+
+        {/* Category (for reviews) */}
+        {contentType === "review" && (
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
+              {t.add.categoryLabel}
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none cursor-pointer transition-colors"
+            >
+              <option value="person">{t.home.person}</option>
+              <option value="company">{t.home.company}</option>
+              <option value="thing">{t.home.product}</option>
+              <option value="other">{t.home.other}</option>
+            </select>
+          </div>
+        )}
+
+        {/* Zodiac Sign (for horoscopes) */}
+        {contentType === "horoscope" && (
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">
+              {t.horoscope.selectZodiac}
+            </label>
+            <select
+              value={zodiacSign}
+              onChange={(e) => setZodiacSign(e.target.value)}
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none cursor-pointer transition-colors"
+            >
+              <option value="">{t.horoscope.general}</option>
+              {Object.entries(t.horoscope.zodiacSigns).map(([key, name]) => (
+                <option key={key} value={key}>{name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Image */}
         <div>

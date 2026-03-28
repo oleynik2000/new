@@ -24,6 +24,14 @@ const uk: Translations = {
     pts: "балів",
     or: "або",
     characters: "символів",
+    home: "Головна",
+    profile: "Профіль",
+    notifications: "Сповіщення",
+    loadMore: "Завантажити ще",
+    noMore: "Більше немає",
+    today: "Сьогодні",
+    trending: "Тренди",
+    whatsNew: "Що нового сьогодні?",
   },
 
   footer: {
@@ -319,6 +327,71 @@ const uk: Translations = {
     en: "English",
     ru: "Русский",
     es: "Español",
+  },
+
+  horoscope: {
+    title: "Гороскопи",
+    zodiacSigns: {
+      aries: "Овен",
+      taurus: "Телець",
+      gemini: "Близнюки",
+      cancer: "Рак",
+      leo: "Лев",
+      virgo: "Діва",
+      libra: "Терези",
+      scorpio: "Скорпіон",
+      sagittarius: "Стрілець",
+      capricorn: "Козеріг",
+      aquarius: "Водолій",
+      pisces: "Риби",
+    },
+    general: "Загальний",
+    filterReviews: "Відгуки",
+    filterHoroscopes: "Гороскопи",
+    filterAll: "Все",
+    contentType: "Тип контенту",
+    selectZodiac: "Оберіть знак зодіаку",
+    publishHoroscope: "Опублікувати гороскоп",
+  },
+
+  profile: {
+    title: "Мій профіль",
+    posts: "Пости",
+    votes: "Голоси",
+    badges: "Бейджі",
+    noBadges: "Бейджів ще немає. Продовжуйте бути активними!",
+    streakDays: "{n} днів поспіль!",
+    rankNovice: "Новачок",
+    rankActive: "Активний",
+    rankExpert: "Експерт",
+    rankLegend: "Легенда",
+    pointsToNext: "до наступного рангу",
+    dailyStreak: "Щоденна серія",
+  },
+
+  notificationsPage: {
+    title: "Сповіщення",
+    markAllRead: "Позначити все прочитаним",
+    noNotifications: "Сповіщень немає",
+    replyNotification: "відповів(ла) на ваш коментар",
+    reactionNotification: "відреагував(ла) на ваш пост",
+    newPostNotification: "Новий пост у категорії",
+  },
+
+  trends: {
+    popularToday: "Популярне сьогодні",
+    mostDiscussedWeek: "Найобговорюваніше за тиждень",
+    trendingTags: "Популярні теги",
+    newToday: "Нове сьогодні",
+    postsToday: "постів сьогодні",
+  },
+
+  mobileNav: {
+    home: "Головна",
+    add: "Додати",
+    profile: "Профіль",
+    notifications: "Сповіщення",
+    trending: "Тренди",
   },
 };
 

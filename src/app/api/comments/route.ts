@@ -9,6 +9,8 @@ import {
   isHoneypotTriggered,
 } from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { addPoints } from "@/lib/gamification";
+import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
@@ -49,15 +51,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const cookies = request.cookies;
+    let userHash = cookies.get("voter_id")?.value;
+    if (!userHash) {
+      userHash = uuidv4();
+    }
+
     const comment = await prisma.comment.create({
       data: {
         content: sanitizeHtml(data.content),
         entityId: data.entityId,
         parentId: data.parentId || null,
+        authorHash: userHash,
       },
     });
 
-    return NextResponse.json(comment, { status: 201 });
+    // Gamification: +1 point for comment
+    await addPoints(userHash, 1, "comment");
+
+    // Create notification for parent comment author (reply notification)
+    if (data.parentId) {
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: data.parentId },
+        select: { authorHash: true, entityId: true },
+      });
+      if (parentComment?.authorHash && parentComment.authorHash !== userHash) {
+        await prisma.notification.create({
+          data: {
+            userHash: parentComment.authorHash,
+            type: "reply",
+            message: data.content.substring(0, 100),
+            entityId: data.entityId,
+          },
+        });
+      }
+    }
+
+    const response = NextResponse.json(comment, { status: 201 });
+    response.cookies.set("voter_id", userHash, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 365,
+      path: "/",
+    });
+    return response;
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(

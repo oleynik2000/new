@@ -13,6 +13,8 @@ model Entity {
   description String?
   imageUrl    String?
   category    String    @default("other")
+  contentType String    @default("review")
+  zodiacSign  String?
   hidden      Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -21,6 +23,7 @@ model Entity {
   reports     Report[]
   votes       Vote[]
   tags        TagOnEntity[]
+  notifications Notification[]
 }
 
 model Comment {
@@ -28,6 +31,7 @@ model Comment {
   content   String
   entityId  String
   parentId  String?
+  authorHash String?
   hidden    Boolean   @default(false)
   createdAt DateTime  @default(now())
 
@@ -77,4 +81,60 @@ model TagOnEntity {
   tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([entityId, tagId])
+}
+
+model UserActivity {
+  id            String   @id @default(uuid())
+  userHash      String   @unique
+  points        Int      @default(0)
+  streak        Int      @default(0)
+  lastActive    DateTime @default(now())
+  postsCount    Int      @default(0)
+  commentsCount Int      @default(0)
+  votesCount    Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  badges        UserBadge[]
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  nameUk      String
+  nameEn      String
+  nameRu      String
+  nameEs      String
+  descUk      String
+  descEn      String
+  descRu      String
+  descEs      String
+  icon        String
+  threshold   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id         String   @id @default(uuid())
+  userHash   String
+  badgeId    String
+  earnedAt   DateTime @default(now())
+
+  user       UserActivity @relation(fields: [userHash], references: [userHash], onDelete: Cascade)
+  badge      Badge        @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userHash, badgeId])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  userHash   String
+  type       String
+  message    String
+  entityId   String?
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  entity     Entity?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { I18nProvider, useTranslations } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import BottomNav from "@/components/BottomNav";
 
 function HeaderNav() {
   const t = useTranslations();
@@ -128,10 +129,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <I18nProvider>
       <HeaderNav />
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">
+      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-20 md:pb-6">
         {children}
       </main>
       <Footer />
+      <BottomNav />
     </I18nProvider>
   );
 }
