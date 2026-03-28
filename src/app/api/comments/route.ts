@@ -9,7 +9,7 @@ import {
   isHoneypotTriggered,
 } from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { addPoints } from "@/lib/gamification";
+import { addPoints, POINTS_CONFIG } from "@/lib/gamification";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Gamification: +1 point for comment
-    await addPoints(userHash, 1, "comment");
+    // Gamification: award points for comment (server-side)
+    const pointsResult = await addPoints(userHash, POINTS_CONFIG.comment, "comment", comment.id);
 
     // Create notification for parent comment author (reply notification)
     if (data.parentId) {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const response = NextResponse.json(comment, { status: 201 });
+    const response = NextResponse.json({ ...comment, pointsAwarded: pointsResult.awarded, totalPoints: pointsResult.points, rank: pointsResult.rank }, { status: 201 });
     response.cookies.set("voter_id", userHash, {
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 365,

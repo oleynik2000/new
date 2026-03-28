@@ -4,6 +4,9 @@ import Link from "next/link";
 import { I18nProvider, useTranslations } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import BottomNav from "@/components/BottomNav";
+import PointsBadge from "@/components/PointsBadge";
+import PointsToast from "@/components/PointsToast";
+import UserIdentityProvider from "@/components/UserIdentityProvider";
 
 function HeaderNav() {
   const t = useTranslations();
@@ -39,6 +42,7 @@ function HeaderNav() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
+          <PointsBadge />
           <LanguageSwitcher />
           <Link
             href="/add"
@@ -128,6 +132,8 @@ function Footer() {
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider>
+      <UserIdentityProvider />
+      <PointsToast />
       <HeaderNav />
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-20 md:pb-6">
         {children}

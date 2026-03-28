@@ -138,3 +138,15 @@ model Notification {
 
   entity     Entity?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
+
+model GamificationEvent {
+  id             String   @id @default(uuid())
+  userHash       String
+  type           String   // "comment", "post", "vote"
+  pointsAwarded  Int
+  referenceId    String?  // ID of the comment/entity/vote that triggered this
+  createdAt      DateTime @default(now())
+
+  @@index([userHash])
+  @@index([userHash, type, referenceId])
+}

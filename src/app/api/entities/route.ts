@@ -9,7 +9,7 @@ import {
   isHoneypotTriggered,
 } from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { addPoints } from "@/lib/gamification";
+import { addPoints, POINTS_CONFIG } from "@/lib/gamification";
 import { v4 as uuidv4 } from "uuid";
 
 export async function GET(request: NextRequest) {
@@ -166,10 +166,10 @@ export async function POST(request: NextRequest) {
     if (!userHash) {
       userHash = uuidv4();
     }
-    const pointsAwarded = data.contentType === "horoscope" ? 5 : 3;
-    await addPoints(userHash, pointsAwarded, "post");
+    const pointsAmount = data.contentType === "horoscope" ? POINTS_CONFIG.postHoroscope : POINTS_CONFIG.post;
+    const pointsResult = await addPoints(userHash, pointsAmount, "post", entity.id);
 
-    const response = NextResponse.json(entity, { status: 201 });
+    const response = NextResponse.json({ ...entity, pointsAwarded: pointsResult.awarded, totalPoints: pointsResult.points, rank: pointsResult.rank }, { status: 201 });
     response.cookies.set("voter_id", userHash, {
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 365,
