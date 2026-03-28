@@ -24,6 +24,8 @@ export function getOrCreateVoterHash(request: NextRequest): {
 export function setVoterCookie(response: NextResponse, userHash: string): void {
   response.cookies.set(VOTER_COOKIE, userHash, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: COOKIE_MAX_AGE,
     path: "/",
   });
