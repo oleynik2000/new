@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
+import { RANK_COLORS as RANK_COLORS_MAP, RANK_BG, RANK_ICONS, getRankName } from "@/lib/constants";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import BackLink from "@/components/ui/BackLink";
 
 interface BadgeInfo {
   key: string;
@@ -24,18 +27,11 @@ interface UserProfile {
   badges: BadgeInfo[];
 }
 
-const RANK_COLORS: Record<string, string> = {
+const PROFILE_RANK_COLORS: Record<string, string> = {
   novice: "text-gray-400 border-gray-500/30 bg-gray-500/10",
   active: "text-blue-400 border-blue-500/30 bg-blue-500/10",
   expert: "text-purple-400 border-purple-500/30 bg-purple-500/10",
   legend: "text-yellow-400 border-yellow-500/30 bg-yellow-500/10",
-};
-
-const RANK_ICONS: Record<string, string> = {
-  novice: "\u{1F331}",
-  active: "\u{26A1}",
-  expert: "\u{1F48E}",
-  legend: "\u{1F451}",
 };
 
 export default function ProfilePage() {
@@ -54,27 +50,13 @@ export default function ProfilePage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const rankName = (rank: string) => {
-    const names: Record<string, Record<string, string>> = {
-      novice: { uk: "\u041D\u043E\u0432\u0430\u0447\u043E\u043A", en: "Novice", ru: "\u041D\u043E\u0432\u0438\u0447\u043E\u043A", es: "Novato" },
-      active: { uk: "\u0410\u043A\u0442\u0438\u0432\u043D\u0438\u0439", en: "Active", ru: "\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0439", es: "Activo" },
-      expert: { uk: "\u0415\u043A\u0441\u043F\u0435\u0440\u0442", en: "Expert", ru: "\u042D\u043A\u0441\u043F\u0435\u0440\u0442", es: "Experto" },
-      legend: { uk: "\u041B\u0435\u0433\u0435\u043D\u0434\u0430", en: "Legend", ru: "\u041B\u0435\u0433\u0435\u043D\u0434\u0430", es: "Leyenda" },
-    };
-    return names[rank]?.[locale] || rank;
-  };
-
   const getBadgeName = (badge: BadgeInfo) => {
     const key = `name${locale.charAt(0).toUpperCase()}${locale.slice(1)}` as keyof BadgeInfo;
     return (badge[key] as string) || badge.nameEn;
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!user) {
@@ -104,26 +86,19 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl animate-fade-in">
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-        </svg>
-        {t.common.backToHome}
-      </Link>
+      <BackLink label={t.common.backToHome} />
 
       {/* Profile Header */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 mb-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="h-16 w-16 rounded-full bg-[var(--bg-elevated)] border-2 border-[var(--border)] flex items-center justify-center text-2xl">
             {RANK_ICONS[user.rank] || "\u{1F464}"}
+
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className={`rounded-full px-3 py-1 text-sm font-semibold border ${RANK_COLORS[user.rank]}`}>
-                {rankName(user.rank)}
+              <span className={`rounded-full px-3 py-1 text-sm font-semibold border ${PROFILE_RANK_COLORS[user.rank]}`}>
+                {getRankName(user.rank, locale)}
               </span>
             </div>
             <p className="text-2xl font-bold mt-1">{user.points} {t.common.pts}</p>
@@ -144,8 +119,8 @@ export default function ProfilePage() {
         {user.rank !== "legend" && (
           <div className="mb-4">
             <div className="flex justify-between text-xs text-[var(--text-muted)] mb-1">
-              <span>{rankName(user.rank)}</span>
-              <span>{rankName(progressInfo.next)} ({progressInfo.needed} {t.common.pts})</span>
+              <span>{getRankName(user.rank, locale)}</span>
+              <span>{getRankName(progressInfo.next, locale)} ({progressInfo.needed} {t.common.pts})</span>
             </div>
             <div className="h-2 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
               <div

@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
-import { ZODIAC_ICONS } from "@/lib/gamification";
+import { getZodiacIcon } from "@/lib/constants";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface TrendEntity {
   id: string;
@@ -45,11 +46,7 @@ export default function TrendingPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!data) {
@@ -59,11 +56,6 @@ export default function TrendingPage() {
       </div>
     );
   }
-
-  const zodiacIcon = (sign: string | null) => {
-    if (!sign) return null;
-    return ZODIAC_ICONS[sign as keyof typeof ZODIAC_ICONS] || null;
-  };
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-in">
@@ -102,7 +94,7 @@ export default function TrendingPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium group-hover:text-[var(--accent)] transition-colors truncate">
                       {item.contentType === "horoscope" && item.zodiacSign && (
-                        <span className="mr-1">{zodiacIcon(item.zodiacSign)}</span>
+                        <span className="mr-1">{getZodiacIcon(item.zodiacSign)}</span>
                       )}
                       {item.title}
                     </p>

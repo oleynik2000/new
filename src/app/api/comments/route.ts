@@ -10,7 +10,7 @@ import {
 } from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { addPoints, POINTS_CONFIG } from "@/lib/gamification";
-import { v4 as uuidv4 } from "uuid";
+import { getOrCreateVoterHash, setVoterCookie } from "@/lib/cookies";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
@@ -51,11 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookies = request.cookies;
-    let userHash = cookies.get("voter_id")?.value;
-    if (!userHash) {
-      userHash = uuidv4();
-    }
+    const { userHash } = getOrCreateVoterHash(request);
 
     const comment = await prisma.comment.create({
       data: {
@@ -88,11 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ ...comment, pointsAwarded: pointsResult.awarded, totalPoints: pointsResult.points, rank: pointsResult.rank }, { status: 201 });
-    response.cookies.set("voter_id", userHash, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-    });
+    setVoterCookie(response, userHash);
     return response;
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
