@@ -1,5 +1,18 @@
 import prisma from "./prisma";
 
+// ==========================================
+// Configurable Points System
+// ==========================================
+export const POINTS_CONFIG = {
+  comment: 1,
+  post: 3,
+  postHoroscope: 5,
+  vote: 1,
+} as const;
+
+// ==========================================
+// Ranks / Levels
+// ==========================================
 export const RANKS = {
   novice: { min: 0, max: 49 },
   active: { min: 50, max: 199 },
@@ -23,15 +36,61 @@ export const RANK_COLORS: Record<RankKey, string> = {
   legend: "text-yellow-400",
 };
 
+// ==========================================
+// User management
+// ==========================================
 export async function getOrCreateUser(userHash: string) {
   return prisma.userActivity.upsert({
     where: { userHash },
-    update: {},
+    update: { lastActive: new Date() },
     create: { userHash },
     include: { badges: { include: { badge: true } } },
   });
 }
 
+// ==========================================
+// Duplicate action protection
+// ==========================================
+async function isDuplicateAction(
+  userHash: string,
+  type: string,
+  referenceId: string | null
+): Promise<boolean> {
+  if (!referenceId) return false;
+  const existing = await prisma.gamificationEvent.findFirst({
+    where: { userHash, type, referenceId },
+  });
+  return !!existing;
+}
+
+// ==========================================
+// Rate limit for points (anti-farming)
+// ==========================================
+const POINTS_RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const POINTS_RATE_LIMIT_MAX: Record<string, number> = {
+  comment: 5,
+  post: 3,
+  vote: 10,
+};
+
+async function isPointsRateLimited(
+  userHash: string,
+  type: string
+): Promise<boolean> {
+  const windowStart = new Date(Date.now() - POINTS_RATE_LIMIT_WINDOW_MS);
+  const recentActions = await prisma.gamificationEvent.count({
+    where: {
+      userHash,
+      type,
+      createdAt: { gte: windowStart },
+    },
+  });
+  return recentActions >= (POINTS_RATE_LIMIT_MAX[type] ?? 5);
+}
+
+// ==========================================
+// Streak helpers
+// ==========================================
 function isSameDay(d1: Date, d2: Date): boolean {
   return (
     d1.getFullYear() === d2.getFullYear() &&
@@ -46,11 +105,41 @@ function isYesterday(d1: Date, d2: Date): boolean {
   return isSameDay(d1, yesterday);
 }
 
+// ==========================================
+// Award points (server-side only)
+// ==========================================
 export async function addPoints(
   userHash: string,
   amount: number,
-  action: "post" | "comment" | "vote"
+  action: "post" | "comment" | "vote",
+  referenceId?: string
 ) {
+  // Duplicate protection
+  if (referenceId && (await isDuplicateAction(userHash, action, referenceId))) {
+    const user = await getOrCreateUser(userHash);
+    return {
+      points: user.points,
+      streak: user.streak,
+      streakBonus: 0,
+      rank: getRank(user.points),
+      awarded: 0,
+      duplicate: true,
+    };
+  }
+
+  // Points rate limiting (anti-farming)
+  if (await isPointsRateLimited(userHash, action)) {
+    const user = await getOrCreateUser(userHash);
+    return {
+      points: user.points,
+      streak: user.streak,
+      streakBonus: 0,
+      rank: getRank(user.points),
+      awarded: 0,
+      rateLimited: true,
+    };
+  }
+
   const user = await getOrCreateUser(userHash);
   const now = new Date();
   const lastActive = new Date(user.lastActive);
@@ -89,11 +178,30 @@ export async function addPoints(
     include: { badges: { include: { badge: true } } },
   });
 
+  // Log the gamification event
+  await prisma.gamificationEvent.create({
+    data: {
+      userHash,
+      type: action,
+      pointsAwarded: totalPoints,
+      referenceId: referenceId || null,
+    },
+  });
+
   await checkAndAwardBadges(userHash, updated);
 
-  return { points: updated.points, streak: newStreak, streakBonus, rank: getRank(updated.points) };
+  return {
+    points: updated.points,
+    streak: newStreak,
+    streakBonus,
+    rank: getRank(updated.points),
+    awarded: totalPoints,
+  };
 }
 
+// ==========================================
+// Badges
+// ==========================================
 async function checkAndAwardBadges(
   userHash: string,
   user: { points: number; postsCount: number; commentsCount: number; votesCount: number; streak: number }
@@ -142,10 +250,53 @@ async function checkAndAwardBadges(
       await prisma.userBadge.create({
         data: { userHash, badgeId: badge.id },
       });
+
+      // Create notification for new badge
+      await prisma.notification.create({
+        data: {
+          userHash,
+          type: "badge",
+          message: badge.nameEn,
+        },
+      });
     }
   }
 }
 
+// ==========================================
+// Leaderboard
+// ==========================================
+export async function getLeaderboard(limit = 20) {
+  const users = await prisma.userActivity.findMany({
+    orderBy: { points: "desc" },
+    take: limit,
+    select: {
+      userHash: true,
+      points: true,
+      streak: true,
+      postsCount: true,
+      commentsCount: true,
+      votesCount: true,
+      badges: { include: { badge: true } },
+    },
+  });
+
+  return users.map((u, index) => ({
+    rank: index + 1,
+    userHash: u.userHash.substring(0, 8) + "...",
+    points: u.points,
+    level: getRank(u.points),
+    streak: u.streak,
+    postsCount: u.postsCount,
+    commentsCount: u.commentsCount,
+    votesCount: u.votesCount,
+    badgeCount: u.badges.length,
+  }));
+}
+
+// ==========================================
+// Zodiac helpers
+// ==========================================
 export const ZODIAC_SIGNS = [
   "aries", "taurus", "gemini", "cancer", "leo", "virgo",
   "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",

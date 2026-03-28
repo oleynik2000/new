@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/lib/i18n";
+import { showPointsToast } from "@/components/PointsToast";
 
 export default function AddEntityPage() {
   const router = useRouter();
@@ -79,6 +80,9 @@ export default function AddEntityPage() {
 
       const data = await res.json();
       if (res.ok) {
+        if (data.pointsAwarded > 0) {
+          showPointsToast(data.pointsAwarded, "post");
+        }
         router.push(`/entity/${data.id}`);
       } else {
         setError(data.error || t.add.creationFailed);

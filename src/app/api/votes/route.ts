@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { voteSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { addPoints } from "@/lib/gamification";
+import { addPoints, POINTS_CONFIG } from "@/lib/gamification";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
           voterHash,
         },
       });
-      // Gamification: +1 point for voting (only new votes)
-      await addPoints(voterHash, 1, "vote");
+      // Gamification: award points for voting (server-side, only new votes)
+      await addPoints(voterHash, POINTS_CONFIG.vote, "vote", `vote-${data.entityId}-${voterHash}`);
     }
 
     const votes = await prisma.vote.findMany({

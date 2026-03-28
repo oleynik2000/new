@@ -151,6 +151,9 @@ async function main() {
     { key: "expert", nameUk: "Експерт", nameEn: "Expert", nameRu: "Эксперт", nameEs: "Experto", descUk: "Набрали 200 балів", descEn: "Earned 200 points", descRu: "Набрали 200 баллов", descEs: "Ganaste 200 puntos", icon: "🏆", threshold: 200 },
     { key: "streak_7", nameUk: "Тижнева серія", nameEn: "Week Streak", nameRu: "Недельная серия", nameEs: "Racha semanal", descUk: "7 днів поспіль", descEn: "7 day streak", descRu: "7 дней подряд", descEs: "7 dias seguidos", icon: "🔥", threshold: 7 },
     { key: "legend", nameUk: "Легенда", nameEn: "Legend", nameRu: "Легенда", nameEs: "Leyenda", descUk: "Набрали 500 балів", descEn: "Earned 500 points", descRu: "Набрали 500 баллов", descEs: "Ganaste 500 puntos", icon: "👑", threshold: 500 },
+    { key: "voter", nameUk: "Голосувальник", nameEn: "Voter", nameRu: "Голосующий", nameEs: "Votante", descUk: "Проголосували 20 разів", descEn: "Voted 20 times", descRu: "Проголосовали 20 раз", descEs: "Votaste 20 veces", icon: "🗳️", threshold: 20 },
+    { key: "streak_30", nameUk: "Місячна серія", nameEn: "Month Streak", nameRu: "Месячная серия", nameEs: "Racha mensual", descUk: "30 днів поспіль", descEn: "30 day streak", descRu: "30 дней подряд", descEs: "30 dias seguidos", icon: "🌟", threshold: 30 },
+    { key: "prolific", nameUk: "Плідний автор", nameEn: "Prolific Author", nameRu: "Плодотворный автор", nameEs: "Autor prolifico", descUk: "Опублікували 10 постів", descEn: "Published 10 posts", descRu: "Опубликовали 10 постов", descEs: "Publicaste 10 posts", icon: "✍️", threshold: 10 },
   ];
 
   for (const badge of badgeData) {

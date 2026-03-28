@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
+import { showPointsToast } from "@/components/PointsToast";
 
 interface Comment {
   id: string;
@@ -72,9 +73,13 @@ function CommentComponent({
         }),
       });
       if (res.ok) {
+        const data = await res.json();
         setReplyContent("");
         setShowReplyForm(false);
         onReplyAdded();
+        if (data.pointsAwarded > 0) {
+          showPointsToast(data.pointsAwarded, "comment");
+        }
       }
     } catch (err) {
       console.error(err);
@@ -236,6 +241,7 @@ export default function EntityPage() {
       if (res.ok) {
         const data = await res.json();
         setEntity((prev) => (prev ? { ...prev, rating: data.rating } : prev));
+        // Vote points toast is not shown since votes don't always award points (duplicate protection)
       }
     } catch (err) {
       console.error(err);
@@ -256,8 +262,12 @@ export default function EntityPage() {
         }),
       });
       if (res.ok) {
+        const resData = await res.json();
         setCommentText("");
         fetchEntity();
+        if (resData.pointsAwarded > 0) {
+          showPointsToast(resData.pointsAwarded, "comment");
+        }
       } else {
         const data = await res.json();
         setError(data.error || "Error");
