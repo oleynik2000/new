@@ -30,7 +30,7 @@ export default function PointsToast() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("locale");
+      const stored = localStorage.getItem("anonboard-locale");
       if (stored) setLocale(stored);
     }
   }, []);
