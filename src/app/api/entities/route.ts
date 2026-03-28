@@ -9,14 +9,18 @@ import {
   isHoneypotTriggered,
 } from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { addPoints } from "@/lib/gamification";
+import { v4 as uuidv4 } from "uuid";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
   const sort = searchParams.get("sort") || "newest";
   const category = searchParams.get("category") || "";
+  const contentType = searchParams.get("contentType") || "";
+  const tag = searchParams.get("tag") || "";
   const page = parseInt(searchParams.get("page") || "1");
-  const limit = 12;
+  const limit = parseInt(searchParams.get("limit") || "12");
   const skip = (page - 1) * limit;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,6 +35,18 @@ export async function GET(request: NextRequest) {
 
   if (category && category !== "all") {
     where.category = category;
+  }
+
+  if (contentType && contentType !== "all") {
+    where.contentType = contentType;
+  }
+
+  if (tag) {
+    where.tags = {
+      some: {
+        tag: { name: tag.toLowerCase() },
+      },
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,7 +98,6 @@ export async function POST(request: NextRequest) {
 
     // Honeypot check
     if (isHoneypotTriggered(data.website)) {
-      // Silently reject bot submissions (return success to not tip off the bot)
       return NextResponse.json({ id: "ok" }, { status: 201 });
     }
 
@@ -112,16 +127,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Auto-add horoscope tags
+    let entityTags = data.tags || [];
+    if (data.contentType === "horoscope") {
+      const horoscopeTags = ["гороскоп", "астрологія", "знакизодіаку"];
+      entityTags = [...new Set([...entityTags, ...horoscopeTags])];
+    }
+
     const entity = await prisma.entity.create({
       data: {
         title: sanitizeHtml(data.title),
         description: data.description ? sanitizeHtml(data.description) : null,
         imageUrl: data.imageUrl || null,
         category: data.category,
-        tags: data.tags?.length
+        contentType: data.contentType || "review",
+        zodiacSign: data.zodiacSign || null,
+        tags: entityTags.length
           ? {
               create: await Promise.all(
-                data.tags.map(async (tagName) => {
+                entityTags.map(async (tagName) => {
                   const tag = await prisma.tag.upsert({
                     where: { name: tagName.toLowerCase().trim() },
                     update: {},
@@ -136,7 +160,22 @@ export async function POST(request: NextRequest) {
       include: { tags: { include: { tag: true } } },
     });
 
-    return NextResponse.json(entity, { status: 201 });
+    // Gamification: award points for creating a post
+    const cookies = request.cookies;
+    let userHash = cookies.get("voter_id")?.value;
+    if (!userHash) {
+      userHash = uuidv4();
+    }
+    const pointsAwarded = data.contentType === "horoscope" ? 5 : 3;
+    await addPoints(userHash, pointsAwarded, "post");
+
+    const response = NextResponse.json(entity, { status: 201 });
+    response.cookies.set("voter_id", userHash, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 365,
+      path: "/",
+    });
+    return response;
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(

@@ -24,6 +24,14 @@ const en: Translations = {
     pts: "pts",
     or: "or",
     characters: "characters",
+    home: "Home",
+    profile: "Profile",
+    notifications: "Notifications",
+    loadMore: "Load more",
+    noMore: "No more posts",
+    today: "Today",
+    trending: "Trending",
+    whatsNew: "What's new today?",
   },
 
   footer: {
@@ -317,6 +325,71 @@ const en: Translations = {
     en: "English",
     ru: "Russian",
     es: "Spanish",
+  },
+
+  horoscope: {
+    title: "Horoscopes",
+    zodiacSigns: {
+      aries: "Aries",
+      taurus: "Taurus",
+      gemini: "Gemini",
+      cancer: "Cancer",
+      leo: "Leo",
+      virgo: "Virgo",
+      libra: "Libra",
+      scorpio: "Scorpio",
+      sagittarius: "Sagittarius",
+      capricorn: "Capricorn",
+      aquarius: "Aquarius",
+      pisces: "Pisces",
+    },
+    general: "General",
+    filterReviews: "Reviews",
+    filterHoroscopes: "Horoscopes",
+    filterAll: "All",
+    contentType: "Content Type",
+    selectZodiac: "Select zodiac sign",
+    publishHoroscope: "Publish Horoscope",
+  },
+
+  profile: {
+    title: "My Profile",
+    posts: "Posts",
+    votes: "Votes",
+    badges: "Badges",
+    noBadges: "No badges yet. Keep being active!",
+    streakDays: "{n} day streak!",
+    rankNovice: "Novice",
+    rankActive: "Active",
+    rankExpert: "Expert",
+    rankLegend: "Legend",
+    pointsToNext: "to next rank",
+    dailyStreak: "Daily Streak",
+  },
+
+  notificationsPage: {
+    title: "Notifications",
+    markAllRead: "Mark all as read",
+    noNotifications: "No notifications",
+    replyNotification: "replied to your comment",
+    reactionNotification: "reacted to your post",
+    newPostNotification: "New post in category",
+  },
+
+  trends: {
+    popularToday: "Popular Today",
+    mostDiscussedWeek: "Most Discussed This Week",
+    trendingTags: "Trending Tags",
+    newToday: "New Today",
+    postsToday: "posts today",
+  },
+
+  mobileNav: {
+    home: "Home",
+    add: "Add",
+    profile: "Profile",
+    notifications: "Notifications",
+    trending: "Trending",
   },
 };
 

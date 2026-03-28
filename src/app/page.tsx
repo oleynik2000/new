@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations, useLocale } from "@/lib/i18n";
+import { ZODIAC_ICONS } from "@/lib/gamification";
 
 interface Tag {
   tag: { id: string; name: string };
@@ -15,6 +16,8 @@ interface Entity {
   description: string | null;
   imageUrl: string | null;
   category: string;
+  contentType: string;
+  zodiacSign: string | null;
   createdAt: string;
   rating: number;
   commentCount: number;
@@ -28,6 +31,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
 };
 
+const HOROSCOPE_GRADIENT = "bg-gradient-to-br from-indigo-500/15 via-purple-500/15 to-pink-500/15 border-indigo-500/20";
+
 export default function HomePage() {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -35,9 +40,12 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
   const [category, setCategory] = useState("all");
+  const [contentType, setContentType] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observerRef = useRef<HTMLDivElement>(null);
 
   const CATEGORY_LABELS: Record<string, string> = {
     person: t.home.person,
@@ -46,32 +54,66 @@ export default function HomePage() {
     other: t.home.other,
   };
 
-  const fetchEntities = useCallback(async () => {
-    setLoading(true);
+  const fetchEntities = useCallback(async (pageNum: number, append: boolean = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     const params = new URLSearchParams({
       search,
       sort,
       category,
-      page: page.toString(),
+      page: pageNum.toString(),
     });
+    if (contentType !== "all") {
+      params.set("contentType", contentType);
+    }
     try {
       const res = await fetch(`/api/entities?${params}`);
       const data = await res.json();
-      setEntities(data.entities);
+      if (append) {
+        setEntities((prev) => [...prev, ...data.entities]);
+      } else {
+        setEntities(data.entities);
+      }
       setTotalPages(data.pages);
     } catch (err) {
       console.error(err);
     }
     setLoading(false);
-  }, [search, sort, category, page]);
-
-  useEffect(() => {
-    fetchEntities();
-  }, [fetchEntities]);
+    setLoadingMore(false);
+  }, [search, sort, category, contentType]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, sort, category]);
+    fetchEntities(1, false);
+  }, [search, sort, category, contentType, fetchEntities]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && page < totalPages) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          fetchEntities(nextPage, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const el = observerRef.current;
+    if (el) observer.observe(el);
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [page, totalPages, loadingMore, fetchEntities]);
+
+  const zodiacIcon = (sign: string | null) => {
+    if (!sign) return null;
+    return ZODIAC_ICONS[sign as keyof typeof ZODIAC_ICONS] || null;
+  };
 
   return (
     <div className="animate-fade-in">
@@ -86,7 +128,7 @@ export default function HomePage() {
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <Link
             href="/add"
-            className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md transition-all"
+            className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md transition-all active:scale-95"
           >
             {t.home.startDiscussion}
           </Link>
@@ -111,6 +153,28 @@ export default function HomePage() {
             {t.home.communityDriven}
           </span>
         </div>
+      </div>
+
+      {/* Content Type Filter */}
+      <div className="mb-4 flex gap-2">
+        {[
+          { value: "all", label: t.horoscope.filterAll },
+          { value: "review", label: t.horoscope.filterReviews },
+          { value: "horoscope", label: t.horoscope.filterHoroscopes },
+        ].map((ct) => (
+          <button
+            key={ct.value}
+            onClick={() => setContentType(ct.value)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all active:scale-95 ${
+              contentType === ct.value
+                ? "bg-[var(--accent)] text-white shadow-sm"
+                : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] border border-[var(--border)]"
+            }`}
+          >
+            {ct.value === "horoscope" && "\u2728 "}
+            {ct.label}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
@@ -186,9 +250,22 @@ export default function HomePage() {
             <Link
               key={entity.id}
               href={`/entity/${entity.id}`}
-              className="group rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 transition-all duration-200 hover:border-[var(--border-hover)] hover:bg-[var(--bg-hover)] hover:shadow-lg animate-slide-up"
+              className={`group rounded-xl border p-4 transition-all duration-200 hover:shadow-lg animate-slide-up ${
+                entity.contentType === "horoscope"
+                  ? `${HOROSCOPE_GRADIENT} hover:border-indigo-400/40`
+                  : "border-[var(--border)] bg-[var(--bg-card)] hover:border-[var(--border-hover)] hover:bg-[var(--bg-hover)]"
+              }`}
               style={{ animationDelay: `${index * 50}ms`, animationFillMode: "backwards" }}
             >
+              {/* Horoscope zodiac badge */}
+              {entity.contentType === "horoscope" && entity.zodiacSign && (
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="text-xl">{zodiacIcon(entity.zodiacSign)}</span>
+                  <span className="text-sm font-medium text-indigo-400">
+                    {t.horoscope.zodiacSigns[entity.zodiacSign as keyof typeof t.horoscope.zodiacSigns] || entity.zodiacSign}
+                  </span>
+                </div>
+              )}
               {entity.imageUrl && (
                 <div className="relative mb-3 h-44 w-full overflow-hidden rounded-lg bg-[var(--bg-secondary)]">
                   <Image
@@ -202,12 +279,21 @@ export default function HomePage() {
               )}
               <div className="flex items-start justify-between gap-2">
                 <h2 className="text-base font-semibold group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug">
+                  {entity.contentType === "horoscope" && !entity.zodiacSign && (
+                    <span className="mr-1">{"\u2728"}</span>
+                  )}
                   {entity.title}
                 </h2>
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${CATEGORY_COLORS[entity.category] || CATEGORY_COLORS.other}`}
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                    entity.contentType === "horoscope"
+                      ? "bg-indigo-500/15 text-indigo-400 border border-indigo-500/20"
+                      : CATEGORY_COLORS[entity.category] || CATEGORY_COLORS.other
+                  }`}
                 >
-                  {CATEGORY_LABELS[entity.category] || entity.category}
+                  {entity.contentType === "horoscope"
+                    ? t.horoscope.filterHoroscopes
+                    : CATEGORY_LABELS[entity.category] || entity.category}
                 </span>
               </div>
               {entity.description && (
@@ -247,26 +333,15 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center items-center gap-2">
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-30 hover:bg-[var(--bg-hover)] hover:border-[var(--border-hover)] transition-colors"
-          >
-            {t.common.previous}
-          </button>
-          <span className="flex items-center px-4 text-sm text-[var(--text-muted)]">
-            {t.common.page} {page} {t.common.of} {totalPages}
-          </span>
-          <button
-            disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
-            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-30 hover:bg-[var(--bg-hover)] hover:border-[var(--border-hover)] transition-colors"
-          >
-            {t.common.next}
-          </button>
+      {/* Infinite scroll trigger */}
+      {entities.length > 0 && (
+        <div ref={observerRef} className="flex justify-center py-8">
+          {loadingMore && (
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+          )}
+          {page >= totalPages && (
+            <p className="text-sm text-[var(--text-muted)]">{t.common.noMore}</p>
+          )}
         </div>
       )}
     </div>

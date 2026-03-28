@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { voteSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { addPoints } from "@/lib/gamification";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
   if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "Забагато запитів." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   }
 
   try {
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest) {
           voterHash,
         },
       });
+      // Gamification: +1 point for voting (only new votes)
+      await addPoints(voterHash, 1, "vote");
     }
 
     const votes = await prisma.vote.findMany({
@@ -58,6 +61,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Помилка сервера." }, { status: 500 });
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

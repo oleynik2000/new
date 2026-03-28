@@ -25,6 +25,14 @@ export interface Translations {
     pts: string;
     or: string;
     characters: string;
+    home: string;
+    profile: string;
+    notifications: string;
+    loadMore: string;
+    noMore: string;
+    today: string;
+    trending: string;
+    whatsNew: string;
   };
 
   // Footer
@@ -206,5 +214,62 @@ export interface Translations {
     en: string;
     ru: string;
     es: string;
+  };
+
+  // Horoscope
+  horoscope: {
+    title: string;
+    zodiacSigns: Record<string, string>;
+    general: string;
+    filterReviews: string;
+    filterHoroscopes: string;
+    filterAll: string;
+    contentType: string;
+    selectZodiac: string;
+    publishHoroscope: string;
+  };
+
+  // Profile / Gamification
+  profile: {
+    title: string;
+    posts: string;
+    votes: string;
+    badges: string;
+    noBadges: string;
+    streakDays: string;
+    rankNovice: string;
+    rankActive: string;
+    rankExpert: string;
+    rankLegend: string;
+    pointsToNext: string;
+    dailyStreak: string;
+  };
+
+  // Notifications
+  notificationsPage: {
+    title: string;
+    markAllRead: string;
+    noNotifications: string;
+    replyNotification: string;
+    reactionNotification: string;
+    newPostNotification: string;
+  };
+
+  // Trends
+  trends: {
+    popularToday: string;
+    mostDiscussedWeek: string;
+    trendingTags: string;
+    newToday: string;
+    postsToday: string;
+  };
+
+  // Mobile nav
+  mobileNav: {
+    home: string;
+    add: string;
+    profile: string;
+    notifications: string;
+    trending: string;
   };
 }

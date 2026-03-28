@@ -24,6 +24,14 @@ const es: Translations = {
     pts: "puntos",
     or: "o",
     characters: "caracteres",
+    home: "Inicio",
+    profile: "Perfil",
+    notifications: "Notificaciones",
+    loadMore: "Cargar mas",
+    noMore: "No hay mas publicaciones",
+    today: "Hoy",
+    trending: "Tendencias",
+    whatsNew: "Que hay de nuevo hoy?",
   },
 
   footer: {
@@ -323,6 +331,71 @@ const es: Translations = {
     en: "Ingles",
     ru: "Ruso",
     es: "Espanol",
+  },
+
+  horoscope: {
+    title: "Horoscopos",
+    zodiacSigns: {
+      aries: "Aries",
+      taurus: "Tauro",
+      gemini: "Geminis",
+      cancer: "Cancer",
+      leo: "Leo",
+      virgo: "Virgo",
+      libra: "Libra",
+      scorpio: "Escorpio",
+      sagittarius: "Sagitario",
+      capricorn: "Capricornio",
+      aquarius: "Acuario",
+      pisces: "Piscis",
+    },
+    general: "General",
+    filterReviews: "Resenas",
+    filterHoroscopes: "Horoscopos",
+    filterAll: "Todo",
+    contentType: "Tipo de contenido",
+    selectZodiac: "Seleccionar signo zodiacal",
+    publishHoroscope: "Publicar horoscopo",
+  },
+
+  profile: {
+    title: "Mi perfil",
+    posts: "Publicaciones",
+    votes: "Votos",
+    badges: "Insignias",
+    noBadges: "Aun no hay insignias. Sigue siendo activo!",
+    streakDays: "{n} dias seguidos!",
+    rankNovice: "Novato",
+    rankActive: "Activo",
+    rankExpert: "Experto",
+    rankLegend: "Leyenda",
+    pointsToNext: "para el siguiente rango",
+    dailyStreak: "Racha diaria",
+  },
+
+  notificationsPage: {
+    title: "Notificaciones",
+    markAllRead: "Marcar todo como leido",
+    noNotifications: "No hay notificaciones",
+    replyNotification: "respondio a tu comentario",
+    reactionNotification: "reacciono a tu publicacion",
+    newPostNotification: "Nueva publicacion en categoria",
+  },
+
+  trends: {
+    popularToday: "Popular hoy",
+    mostDiscussedWeek: "Mas discutido esta semana",
+    trendingTags: "Etiquetas populares",
+    newToday: "Nuevo hoy",
+    postsToday: "publicaciones hoy",
+  },
+
+  mobileNav: {
+    home: "Inicio",
+    add: "Agregar",
+    profile: "Perfil",
+    notifications: "Notificaciones",
+    trending: "Tendencias",
   },
 };
 
