@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
+import { RANK_COLORS, RANK_BG, RANK_ICONS, getRankName } from "@/lib/constants";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import BackLink from "@/components/ui/BackLink";
 
 interface LeaderboardEntry {
   rank: number;
@@ -16,27 +19,6 @@ interface LeaderboardEntry {
   badgeCount: number;
 }
 
-const RANK_COLORS: Record<string, string> = {
-  novice: "text-gray-400",
-  active: "text-blue-400",
-  expert: "text-purple-400",
-  legend: "text-yellow-400",
-};
-
-const RANK_BG: Record<string, string> = {
-  novice: "bg-gray-500/10 border-gray-500/20",
-  active: "bg-blue-500/10 border-blue-500/20",
-  expert: "bg-purple-500/10 border-purple-500/20",
-  legend: "bg-yellow-500/10 border-yellow-500/20",
-};
-
-const RANK_ICONS: Record<string, string> = {
-  novice: "\u{1F331}",
-  active: "\u26A1",
-  expert: "\u{1F48E}",
-  legend: "\u{1F451}",
-};
-
 const MEDAL_ICONS = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
 
 export default function LeaderboardPage() {
@@ -44,16 +26,6 @@ export default function LeaderboardPage() {
   const { locale } = useLocale();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const rankName = (rank: string) => {
-    const names: Record<string, Record<string, string>> = {
-      novice: { uk: "\u041D\u043E\u0432\u0430\u0447\u043E\u043A", en: "Novice", ru: "\u041D\u043E\u0432\u0438\u0447\u043E\u043A", es: "Novato" },
-      active: { uk: "\u0410\u043A\u0442\u0438\u0432\u043D\u0438\u0439", en: "Active", ru: "\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0439", es: "Activo" },
-      expert: { uk: "\u0415\u043A\u0441\u043F\u0435\u0440\u0442", en: "Expert", ru: "\u042D\u043A\u0441\u043F\u0435\u0440\u0442", es: "Experto" },
-      legend: { uk: "\u041B\u0435\u0433\u0435\u043D\u0434\u0430", en: "Legend", ru: "\u041B\u0435\u0433\u0435\u043D\u0434\u0430", es: "Leyenda" },
-    };
-    return names[rank]?.[locale] || rank;
-  };
 
   useEffect(() => {
     fetch("/api/gamification/leaderboard")
@@ -80,24 +52,12 @@ export default function LeaderboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="mx-auto max-w-3xl animate-fade-in">
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-        </svg>
-        {t.common.backToHome}
-      </Link>
+      <BackLink label={t.common.backToHome} />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{leaderboardTitle[locale] || leaderboardTitle.en}</h1>
@@ -132,7 +92,7 @@ export default function LeaderboardPage() {
                       {entry.userHash}
                     </span>
                     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${RANK_COLORS[entry.level]} ${RANK_BG[entry.level]}`}>
-                      {RANK_ICONS[entry.level]} {rankName(entry.level)}
+                      {RANK_ICONS[entry.level]} {getRankName(entry.level, locale)}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-3 text-xs text-[var(--text-muted)]">

@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "crypto";
 import { getOrCreateUser, getRank } from "@/lib/gamification";
+import { getOrCreateVoterHash, setVoterCookie } from "@/lib/cookies";
 
 export async function GET(request: NextRequest) {
-  const cookies = request.cookies;
-  let userHash = cookies.get("voter_id")?.value;
-
-  if (!userHash) {
-    userHash = randomUUID();
-  }
+  const { userHash, isNew } = getOrCreateVoterHash(request);
 
   try {
     const user = await getOrCreateUser(userHash);
@@ -21,14 +16,8 @@ export async function GET(request: NextRequest) {
       votesCount: user.votesCount,
     });
 
-    if (!cookies.get("voter_id")?.value) {
-      response.cookies.set("voter_id", userHash, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 365,
-        path: "/",
-      });
+    if (isNew) {
+      setVoterCookie(response, userHash);
     }
 
     return response;

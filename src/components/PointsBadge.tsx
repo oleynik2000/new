@@ -2,20 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-
-const RANK_COLORS: Record<string, string> = {
-  novice: "text-gray-400",
-  active: "text-blue-400",
-  expert: "text-purple-400",
-  legend: "text-yellow-400",
-};
-
-const RANK_ICONS: Record<string, string> = {
-  novice: "\u{1F331}",
-  active: "\u26A1",
-  expert: "\u{1F48E}",
-  legend: "\u{1F451}",
-};
+import { RANK_COLORS, RANK_ICONS } from "@/lib/constants";
 
 interface UserBalance {
   points: number;

@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { voteSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { addPoints, POINTS_CONFIG } from "@/lib/gamification";
-import { v4 as uuidv4 } from "uuid";
+import { getOrCreateVoterHash, setVoterCookie } from "@/lib/cookies";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") || "unknown";
@@ -15,11 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = voteSchema.parse(body);
 
-    const cookies = request.cookies;
-    let voterHash = cookies.get("voter_id")?.value;
-    if (!voterHash) {
-      voterHash = uuidv4();
-    }
+    const { userHash: voterHash } = getOrCreateVoterHash(request);
 
     const existing = await prisma.vote.findUnique({
       where: { entityId_voterHash: { entityId: data.entityId, voterHash } },
@@ -53,11 +49,7 @@ export async function POST(request: NextRequest) {
     const rating = votes.reduce((sum, v) => sum + v.value, 0);
 
     const response = NextResponse.json({ rating, voterHash });
-    response.cookies.set("voter_id", voterHash, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-    });
+    setVoterCookie(response, voterHash);
     return response;
   } catch (error) {
     console.error(error);

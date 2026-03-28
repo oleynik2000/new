@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations, useLocale } from "@/lib/i18n";
-import { ZODIAC_ICONS } from "@/lib/gamification";
+import { CATEGORY_COLORS, HOROSCOPE_GRADIENT, getCategoryLabels, getZodiacIcon } from "@/lib/constants";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import EmptyState from "@/components/ui/EmptyState";
 
 interface Tag {
   tag: { id: string; name: string };
@@ -24,20 +26,12 @@ interface Entity {
   tags: Tag[];
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  person: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
-  company: "bg-green-500/15 text-green-400 border border-green-500/20",
-  thing: "bg-orange-500/15 text-orange-400 border border-orange-500/20",
-  other: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
-};
-
-const HOROSCOPE_GRADIENT = "bg-gradient-to-br from-indigo-500/15 via-purple-500/15 to-pink-500/15 border-indigo-500/20";
-
 export default function HomePage() {
   const t = useTranslations();
   const { locale } = useLocale();
   const [entities, setEntities] = useState<Entity[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sort, setSort] = useState("newest");
   const [category, setCategory] = useState("all");
   const [contentType, setContentType] = useState("all");
@@ -47,12 +41,13 @@ export default function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
 
-  const CATEGORY_LABELS: Record<string, string> = {
-    person: t.home.person,
-    company: t.home.company,
-    thing: t.home.product,
-    other: t.home.other,
-  };
+  const CATEGORY_LABELS = getCategoryLabels(t);
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchEntities = useCallback(async (pageNum: number, append: boolean = false) => {
     if (append) {
@@ -61,7 +56,7 @@ export default function HomePage() {
       setLoading(true);
     }
     const params = new URLSearchParams({
-      search,
+      search: debouncedSearch,
       sort,
       category,
       page: pageNum.toString(),
@@ -83,12 +78,12 @@ export default function HomePage() {
     }
     setLoading(false);
     setLoadingMore(false);
-  }, [search, sort, category, contentType]);
+  }, [debouncedSearch, sort, category, contentType]);
 
   useEffect(() => {
     setPage(1);
     fetchEntities(1, false);
-  }, [search, sort, category, contentType, fetchEntities]);
+  }, [debouncedSearch, sort, category, contentType, fetchEntities]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -109,11 +104,6 @@ export default function HomePage() {
       if (el) observer.unobserve(el);
     };
   }, [page, totalPages, loadingMore, fetchEntities]);
-
-  const zodiacIcon = (sign: string | null) => {
-    if (!sign) return null;
-    return ZODIAC_ICONS[sign as keyof typeof ZODIAC_ICONS] || null;
-  };
 
   return (
     <div className="animate-fade-in">
@@ -225,25 +215,19 @@ export default function HomePage() {
 
       {/* Entity Grid */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-        </div>
+        <LoadingSpinner />
       ) : entities.length === 0 ? (
-        <div className="py-20 text-center animate-fade-in">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-card)] border border-[var(--border)]">
+        <EmptyState
+          icon={
             <svg className="h-8 w-8 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
             </svg>
-          </div>
-          <p className="text-lg font-medium text-[var(--text-secondary)] mb-1">{t.home.noPostsYet}</p>
-          <p className="text-sm text-[var(--text-muted)] mb-4">{t.home.noPostsDescription}</p>
-          <Link
-            href="/add"
-            className="inline-block rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
-          >
-            {t.home.createFirstPost}
-          </Link>
-        </div>
+          }
+          title={t.home.noPostsYet}
+          description={t.home.noPostsDescription}
+          actionLabel={t.home.createFirstPost}
+          actionHref="/add"
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {entities.map((entity, index) => (
@@ -260,7 +244,7 @@ export default function HomePage() {
               {/* Horoscope zodiac badge */}
               {entity.contentType === "horoscope" && entity.zodiacSign && (
                 <div className="mb-3 flex items-center gap-2">
-                  <span className="text-xl">{zodiacIcon(entity.zodiacSign)}</span>
+                  <span className="text-xl">{getZodiacIcon(entity.zodiacSign)}</span>
                   <span className="text-sm font-medium text-indigo-400">
                     {t.horoscope.zodiacSigns[entity.zodiacSign as keyof typeof t.horoscope.zodiacSigns] || entity.zodiacSign}
                   </span>
@@ -272,6 +256,7 @@ export default function HomePage() {
                     src={entity.imageUrl}
                     alt={entity.title}
                     fill
+                    loading="lazy"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />

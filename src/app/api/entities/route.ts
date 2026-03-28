@@ -10,7 +10,7 @@ import {
 } from "@/lib/moderation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { addPoints, POINTS_CONFIG } from "@/lib/gamification";
-import { v4 as uuidv4 } from "uuid";
+import { getOrCreateVoterHash, setVoterCookie } from "@/lib/cookies";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -161,20 +161,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Gamification: award points for creating a post
-    const cookies = request.cookies;
-    let userHash = cookies.get("voter_id")?.value;
-    if (!userHash) {
-      userHash = uuidv4();
-    }
+    const { userHash } = getOrCreateVoterHash(request);
     const pointsAmount = data.contentType === "horoscope" ? POINTS_CONFIG.postHoroscope : POINTS_CONFIG.post;
     const pointsResult = await addPoints(userHash, pointsAmount, "post", entity.id);
 
     const response = NextResponse.json({ ...entity, pointsAwarded: pointsResult.awarded, totalPoints: pointsResult.points, rank: pointsResult.rank }, { status: 201 });
-    response.cookies.set("voter_id", userHash, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
-      path: "/",
-    });
+    setVoterCookie(response, userHash);
     return response;
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {

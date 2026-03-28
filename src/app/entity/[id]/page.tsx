@@ -6,6 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
 import { showPointsToast } from "@/components/PointsToast";
+import { CATEGORY_COLORS, getCategoryLabels } from "@/lib/constants";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import BackLink from "@/components/ui/BackLink";
+import EmptyState from "@/components/ui/EmptyState";
 
 interface Comment {
   id: string;
@@ -31,13 +35,6 @@ interface EntityDetail {
   tags: Tag[];
   votes: { value: number; voterHash: string }[];
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  person: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
-  company: "bg-green-500/15 text-green-400 border border-green-500/20",
-  thing: "bg-orange-500/15 text-orange-400 border border-orange-500/20",
-  other: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
-};
 
 function CommentComponent({
   comment,
@@ -205,12 +202,7 @@ export default function EntityPage() {
   const [reportSent, setReportSent] = useState(false);
   const [error, setError] = useState("");
 
-  const CATEGORY_LABELS: Record<string, string> = {
-    person: t.home.person,
-    company: t.home.company,
-    thing: t.home.product,
-    other: t.home.other,
-  };
+  const CATEGORY_LABELS = getCategoryLabels(t);
 
   const fetchEntity = useCallback(async () => {
     try {
@@ -295,11 +287,7 @@ export default function EntityPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error || !entity) {
@@ -325,15 +313,7 @@ export default function EntityPage() {
 
   return (
     <div className="mx-auto max-w-3xl animate-fade-in">
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-        </svg>
-        {t.common.backToHome}
-      </Link>
+      <BackLink label={t.common.backToHome} />
 
       {/* Entity Header */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
@@ -343,6 +323,7 @@ export default function EntityPage() {
               src={entity.imageUrl}
               alt={entity.title}
               fill
+              priority
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 768px"
             />

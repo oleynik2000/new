@@ -1,12 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { I18nProvider, useTranslations } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import BottomNav from "@/components/BottomNav";
-import PointsBadge from "@/components/PointsBadge";
-import PointsToast from "@/components/PointsToast";
 import UserIdentityProvider from "@/components/UserIdentityProvider";
+
+const BottomNav = dynamic(() => import("@/components/BottomNav"), { ssr: false });
+const PointsBadge = dynamic(() => import("@/components/PointsBadge"), { ssr: false });
+const PointsToast = dynamic(() => import("@/components/PointsToast"), { ssr: false });
 
 function HeaderNav() {
   const t = useTranslations();

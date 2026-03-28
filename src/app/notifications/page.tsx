@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "@/lib/i18n";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface NotificationItem {
   id: string;
@@ -61,11 +62,7 @@ export default function NotificationsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
